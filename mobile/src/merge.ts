@@ -29,6 +29,51 @@ export function bestPlayToPatch<T extends Comparable>(record: Comparable, plays:
   return best && isBetter(best, record) ? best : null;
 }
 
+export interface RecordValue extends Comparable {
+  grade: string | null;
+  plate: string | null;
+}
+
+export type ChangeTag = "first_clear" | "grade_up" | "plate_up" | "score_up";
+
+const GRADE_ORDER = ["F", "D", "C", "B", "A", "A+", "AA", "AA+", "AAA", "AAA+", "S", "S+", "SS", "SS+", "SSS", "SSS+"];
+const PLATE_ORDER = ["RG", "FG", "TG", "MG", "SG", "EG", "UG", "PG"];
+const rank = (order: string[], v: string | null) => (v ? order.indexOf(v) : -1);
+
+/**
+ * 최고 기록이 바뀌었는지와 그 태그. 점수·등급·플레이트·상태 중 하나라도 다르면 바뀐 것으로 본다.
+ * 스테이지 브레이크만 생긴 경우는 기록이 아니므로 null.
+ */
+export function recordChange(oldRec: RecordValue | null, newRec: RecordValue): ChangeTag[] | null {
+  if (newRec.status === "stage_break") return null;
+  if (oldRec && oldRec.status === newRec.status && oldRec.score === newRec.score &&
+      oldRec.grade === newRec.grade && oldRec.plate === newRec.plate) return null;
+  const tags: ChangeTag[] = [];
+  const wasClear = oldRec?.status === "pass";
+  if (newRec.status === "pass" && !wasClear) tags.push("first_clear");
+  if (wasClear && rank(GRADE_ORDER, newRec.grade) > rank(GRADE_ORDER, oldRec!.grade)) tags.push("grade_up");
+  if (wasClear && rank(PLATE_ORDER, newRec.plate) > rank(PLATE_ORDER, oldRec!.plate)) tags.push("plate_up");
+  if (oldRec && (newRec.score ?? -1) > (oldRec.score ?? -1)) tags.push("score_up");
+  return tags;
+}
+
+/**
+ * 맥스 콤보 역산. piugame은 맥스 콤보를 보여주지 않지만 Phoenix 점수 공식으로 구할 수 있다:
+ * score = floor((0.995 × (P + 0.6·Gr + 0.2·Go + 0.1·B) + 0.005 × maxCombo) / 노트 수 × 1,000,000)
+ * 공식을 정확히 만족하는 값이 없으면 null.
+ */
+export function solveMaxCombo(score: number, j: { perfect: number; great: number; good: number; bad: number; miss: number }): number | null {
+  const total = j.perfect + j.great + j.good + j.bad + j.miss;
+  if (total <= 0) return null;
+  const weighted = 0.995 * (j.perfect + 0.6 * j.great + 0.2 * j.good + 0.1 * j.bad);
+  const calc = (mc: number) => Math.floor(((weighted + 0.005 * mc) / total) * 1_000_000 + 1e-9);
+  const guess = Math.ceil(((score * total) / 1_000_000 - weighted) / 0.005 - 1e-6);
+  for (const mc of [guess, guess - 1, guess + 1]) {
+    if (mc >= 0 && mc <= total && calc(mc) === score) return mc;
+  }
+  return null;
+}
+
 export type GradeBand = "SSS" | "SS" | "S" | "AAA-";
 
 export function gradeBand(grade: string | null): GradeBand | null {

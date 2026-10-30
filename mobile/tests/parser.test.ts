@@ -1,5 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { isLoggedIn, parseBestScores, parseGameCards, parseRecentPlays } from "../src/piu/parser";
+import { isLoggedIn, parseBestScores, parseGameCards, parsePumbility, parseRecentPlays } from "../src/piu/parser";
+
+describe("parsePumbility", () => {
+  it("합계 (실제 pumbility.php 구조)", () => {
+    const html = `<div class="pumbility_total_wrap"><div class="icon"><img src="/l_img/pumbility/pumbility_00.png"/></div>
+      <div class="info-wrap"><div class="title">-</div><div class="score">8,127<span class="pumbility-point-sub">.66</span></div></div></div>`;
+    expect(parsePumbility(html)).toBe(8127.66);
+  });
+  it("없으면 null", () => {
+    expect(parsePumbility("<html></html>")).toBeNull();
+  });
+});
 import { card, page } from "./fixtures";
 
 const H1 = "a".repeat(32), H2 = "b".repeat(32), H3 = "c".repeat(32);

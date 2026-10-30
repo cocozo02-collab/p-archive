@@ -21,6 +21,14 @@ export JAVA_HOME="$LOCALAPPDATA/p-archive-tools/jdk21/jdk-21.0.13.0.2+1"
 
 폰이 USB 디버깅으로 연결돼 있으면: `adb install -r android/app/build/outputs/apk/debug/app-debug.apk`
 
+## 저장하는 데이터 (폰 내부 SQLite)
+
+- `records`: 채보별 최고 기록. 바뀔 때마다 이전 값·새 값을 `record_history`에 남긴다(덮어쓰기 전에 기록).
+- `plays`: 최근 플레이와 판정 수. **piugame.com은 최근 플레이를 약 50개만 보여주므로**, 앱은 갱신할 때마다
+  중복 없이 쌓아 둔다. 갱신 간격이 길어 그사이 50플레이를 넘기면 오래된 플레이는 받을 수 없다.
+- `pumbility_history`: 갱신마다 공식 PUMBILITY 값.
+- 스키마 변경은 `src/db.ts`의 `MIGRATIONS`에 번호 순서로 추가한다(기존 데이터 유지).
+
 ## 메모
 
 - `android/local.properties`는 git에서 제외된다. properties 형식이라 경로의 `\`는 `\\`로 쓴다(`sdk.dir=C\:\\Android`).

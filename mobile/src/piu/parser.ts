@@ -219,6 +219,13 @@ export function parseRecentPlays(html: string): { plays: RecentPlay[]; errors: s
   return { plays, errors };
 }
 
+/** my_page/pumbility.php의 공식 PUMBILITY 합계. 값은 `8,127<span class="pumbility-point-sub">.66</span>` 형태. */
+export function parsePumbility(html: string): number | null {
+  const text = doc(html).querySelector(".pumbility_total_wrap .score")?.textContent ?? "";
+  const m = /(\d[\d,]*)(\.\d+)?/.exec(text.replace(/\s+/g, ""));
+  return m ? parseFloat(m[1].replace(/,/g, "") + (m[2] ?? "")) : null;
+}
+
 /** my_page/game_id_information.php. 계정에 딸린 게임카드. */
 export function parseGameCards(html: string): GameCard[] {
   const d = doc(html);

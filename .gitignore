@@ -13,3 +13,6 @@ export/
 .venv/
 __pycache__/
 *.pyc
+
+# 디자인 목업 (로컬 전용)
+*목업*.html

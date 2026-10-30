@@ -1,28 +1,31 @@
 // 기록 갱신. Python 버전(app/sync/records.py)과 같은 순서.
 // 1. 세션 확인(게임 ID 페이지). 만료면 로그인 정보로 로그인(없으면 NeedLogin).
-// 2. 최고 기록 전체 페이지 + 최근 플레이.
-// 3. 저장하고, 클리어가 아닌 기록은 최근 플레이로 보완.
+// 2. 최고 기록 전체 페이지 + 최근 플레이 + PUMBILITY.
+// 3. 저장(바뀐 최고 기록은 이력에 남김)하고, 클리어가 아닌 기록은 최근 플레이로 보완.
 // 4. 카탈로그에 없는 piugame 곡은 자켓을 받아 SHA-256으로 카탈로그 곡과 매칭.
 
 import { CapacitorCookies } from "@capacitor/core";
 import type { Catalog } from "./catalog";
 import type { Credentials } from "./credentials";
-import { USER_ID, type Db } from "./db";
-import { bestPlayToPatch } from "./merge";
+import { type Db, type RecordChange, USER_ID } from "./db";
 import { BASE_URL, LoginError, PiuClient, SessionExpired } from "./piu/client";
-import { type ChartScore, parseBestScores, parseGameCards, parseRecentPlays } from "./piu/parser";
+import { type ChartScore, parseBestScores, parseGameCards, parsePumbility, parseRecentPlays } from "./piu/parser";
 
 const PROBE_PATH = "/my_page/game_id_information.php";
 
 export class NeedLogin extends Error {}
 
 export interface SyncSummary {
+  runId: number;
   gameTag: string | null;
   bestScores: number;
   siteTotal: number | null;
   recentPlays: number;
   newPlays: number;
   patched: number;
+  changes: RecordChange[];
+  pumbility: number | null;
+  pumbilityBefore: number | null;
   matched: number;
   unmatched: string[];
   requests: number;
@@ -82,9 +85,13 @@ export async function syncRecords(
     const recent = parseRecentPlays(await client.getPage("/my_page/recently_played.php"));
     parseErrors.push(...recent.errors);
 
+    progress("PUMBILITY…");
+    const pumbility = parsePumbility(await client.getPage("/my_page/pumbility.php"));
+    if (pumbility === null) parseErrors.push("PUMBILITY 값을 찾지 못함");
+
     progress("저장 중…");
-    const saved = await db.saveFetched(catalog.mix, best, recent.plays,
-      (rec, plays) => bestPlayToPatch(rec, plays));
+    const saved = await db.saveFetched(catalog.mix, best, recent.plays, runId);
+    const pumbilityBefore = pumbility === null ? null : await db.addPumbility(catalog.mix, pumbility, runId);
 
     // 카탈로그에 없는 piugame 해시(자켓 교체, 20레벨 미만 곡 등)는 자켓 내용 해시로 곡을 찾는다.
     const pending = await db.needsMatching(catalog.mix, (h) => catalog.songByHash.has(h));
@@ -104,8 +111,9 @@ export async function syncRecords(
     }
 
     const summary: SyncSummary = {
-      gameTag: main?.gameTag ?? null, bestScores: best.length, siteTotal, recentPlays: recent.plays.length,
-      newPlays: saved.newPlays, patched: saved.patched, matched, unmatched, requests: client.requestCount, parseErrors,
+      runId, gameTag: main?.gameTag ?? null, bestScores: best.length, siteTotal, recentPlays: recent.plays.length,
+      newPlays: saved.newPlays, patched: saved.patched, changes: saved.changes, pumbility, pumbilityBefore,
+      matched, unmatched, requests: client.requestCount, parseErrors,
     };
     await db.finishRun(runId, "ok", summary);
     return summary;

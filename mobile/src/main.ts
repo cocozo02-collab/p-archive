@@ -148,8 +148,9 @@ async function refresh(): Promise<void> {
         if (remember && creds) await saveCredentials(creds);
         await renderHeader();
         await render();
+        const pumb = s.pumbility === null ? "" : ` · PUMBILITY ${s.pumbility.toLocaleString("en-US")}`;
         const extra = s.unmatched.length ? ` · 곡을 못 찾은 기록 ${s.unmatched.length}개` : "";
-        toast(`갱신 완료: 최고 기록 ${s.bestScores}개, 새 플레이 ${s.newPlays}개${extra}`);
+        toast(`갱신 완료: 바뀐 기록 ${s.changes.length}개, 새 플레이 ${s.newPlays}개${pumb}${extra}`);
         return;
       } catch (e) {
         overlay.hidden = true;
