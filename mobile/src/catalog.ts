@@ -1,6 +1,8 @@
-// 앱에 내장한 카탈로그(PC의 scripts/export_catalog.py가 만든 catalog.json + jackets/*.webp).
-// 읽기 전용이라 SQLite에 복사하지 않고 메모리에 올려서 쓴다. 카탈로그를 바꾸면 파일만 교체하면 된다.
+// 곡 목록(카탈로그). PC의 scripts/export_catalog.py가 만든 catalog.json.
+// 앱에 내장한 것과 GitHub 릴리스에서 받은 것 중 더 새것을 쓴다. 읽기 전용이라 메모리에 올려서 쓴다.
+// 자켓 이미지는 들어 있지 않다(저작권). jacket_url로 piugame.com에서 필요할 때 받는다(jackets.ts).
 
+import { Directory, Encoding, Filesystem } from "@capacitor/filesystem";
 import type { ChartType } from "./piu/parser";
 
 export interface Song {
@@ -8,7 +10,7 @@ export interface Song {
   name_en: string;
   name_ko: string | null;
   artist: string | null;
-  jacket: string | null;
+  jacket_url: string | null;
   jacket_sha256: string[];
 }
 
@@ -19,7 +21,7 @@ export interface Chart {
   level: number;
 }
 
-interface CatalogFile {
+export interface CatalogFile {
   format: number;
   mix: string;
   generated_at: string;
@@ -28,6 +30,8 @@ interface CatalogFile {
   piugame_songs: { hash: string; song: string | null; name_ko: string | null }[];
 }
 
+export const DOWNLOADED_CATALOG = "catalog/catalog.json"; // Directory.Data 기준
+
 export class Catalog {
   readonly mix: string;
   readonly generatedAt: string;
@@ -35,6 +39,8 @@ export class Catalog {
   readonly charts: Chart[];
   /** piugame 자켓 해시 → 곡 키 */
   readonly songByHash = new Map<string, string>();
+  /** 곡 키 → piugame 자켓 해시들 */
+  readonly hashesBySong = new Map<string, string[]>();
   /** 자켓 내용 SHA-256 → 곡 키 */
   readonly songBySha = new Map<string, string>();
 
@@ -46,13 +52,23 @@ export class Catalog {
       for (const sha of s.jacket_sha256) this.songBySha.set(sha, s.key);
     }
     this.charts = file.charts;
-    for (const p of file.piugame_songs) if (p.song) this.songByHash.set(p.hash, p.song);
+    for (const p of file.piugame_songs) {
+      if (!p.song) continue;
+      this.songByHash.set(p.hash, p.song);
+      this.hashesBySong.set(p.song, [...(this.hashesBySong.get(p.song) ?? []), p.hash]);
+    }
   }
 
   static async load(): Promise<Catalog> {
     const res = await fetch("./catalog/catalog.json");
     if (!res.ok) throw new Error("카탈로그를 읽지 못했습니다");
-    return new Catalog(await res.json());
+    let file: CatalogFile = await res.json();
+    try {
+      const saved = await Filesystem.readFile({ path: DOWNLOADED_CATALOG, directory: Directory.Data, encoding: Encoding.UTF8 });
+      const downloaded: CatalogFile = JSON.parse(String(saved.data));
+      if (downloaded.format === file.format && downloaded.generated_at > file.generated_at) file = downloaded;
+    } catch { /* 받은 카탈로그가 없거나 깨졌으면 내장본을 쓴다 */ }
+    return new Catalog(file);
   }
 
   levels(type: ChartType): number[] {
@@ -61,9 +77,5 @@ export class Catalog {
 
   chartsAt(type: ChartType, level: number): Chart[] {
     return this.charts.filter((c) => c.type === type && c.level === level);
-  }
-
-  jacketUrl(song: Song): string | null {
-    return song.jacket ? `./catalog/${song.jacket}` : null;
   }
 }

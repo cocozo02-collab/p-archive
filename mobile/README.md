@@ -29,6 +29,38 @@ export JAVA_HOME="$LOCALAPPDATA/p-archive-tools/jdk21/jdk-21.0.13.0.2+1"
 - `pumbility_history`: 갱신마다 공식 PUMBILITY 값.
 - 스키마 변경은 `src/db.ts`의 `MIGRATIONS`에 번호 순서로 추가한다(기존 데이터 유지).
 
+## 자켓 이미지
+
+저장소와 릴리스에는 자켓 이미지를 넣지 않는다(저작권). 카탈로그에는 piugame.com 자켓 주소와 내용 해시만 있고,
+앱은 **화면에 보이는 자켓만** piugame.com에서 받아(요청 간격 1.5초) 192px WebP로 줄여 폰에 캐시한다(`src/jackets.ts`).
+주소를 모르는 곡은 곡별 색 타일과 첫 글자로 보여주다가, 플레이해서 기록이 생기면 그 주소로 받는다.
+
+## 릴리스
+
+서명 키는 저장소 밖에 있다: `~/.p-archive/release.jks` + `~/.p-archive/signing.properties`(비밀번호 포함).
+`android/app/build.gradle`이 이 파일을 읽어 릴리스 APK에 서명한다(다른 위치는 환경 변수 `P_ARCHIVE_SIGNING`).
+
+```bash
+# 1. package.json "version"과 android/app/build.gradle의 versionName/versionCode를 올린다
+# 2. 빌드 + 업로드 (gh auth login 필요)
+mobile/scripts/release.sh app
+# 곡 목록만 바꿀 때 (scripts/export_catalog.py 다음)
+mobile/scripts/release.sh catalog
+```
+
+앱은 `src/update.ts`의 `GITHUB_REPO` 저장소에서 `v*` 릴리스의 `p-archive.apk`와 `catalog-*` 릴리스의 `catalog.json`을 확인한다.
+
+### ⚠ 서명 키 백업
+
+**키를 잃어버리면 기존 설치본에 업데이트를 할 수 없다**(같은 키로 서명한 APK만 덮어 설치된다. 다른 키면 지우고 새로 설치해야 하고, 그러면 폰에 쌓인 기록도 지워진다).
+
+- `~/.p-archive/` 폴더 전체(`release.jks`, `signing.properties`)를 **두 곳 이상**에 보관한다.
+  예: 비밀번호 관리자(1Password, Bitwarden 등)의 첨부 파일 + USB 메모리, 또는 암호화한 압축 파일을 클라우드 드라이브에.
+- `signing.properties`에는 비밀번호가 평문으로 들어 있으니 공개된 곳(이 저장소, 메신저 등)에 올리지 않는다.
+- 키 지문(SHA-256): `23:F5:CC:75:2B:1E:92:83:B1:35:AF:37:E8:45:DD:C7:26:B5:DC:D4:87:F1:B6:7B:51:F5:60:D6:30:84:D8:93`
+  (`apksigner verify --print-certs p-archive.apk`로 릴리스 APK가 이 키로 서명됐는지 확인할 수 있다)
+- 디버그 APK(개발용 키)로 설치한 앱 위에는 릴리스 APK를 덮어 설치할 수 없다. 한 번 지우고 설치해야 한다.
+
 ## 메모
 
 - `android/local.properties`는 git에서 제외된다. properties 형식이라 경로의 `\`는 `\\`로 쓴다(`sdk.dir=C\:\\Android`).

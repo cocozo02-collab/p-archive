@@ -1,0 +1,136 @@
+/* 곡 상세 · 최근 플레이 · 갱신 결과 · 통계 · 업데이트 배너 (목업 4~7번 화면). 색 변수는 style.css. */
+
+/* 업데이트 배너 / 설정 */
+.banner {
+  position: sticky; top: 0; z-index: 6; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: calc(8px + env(safe-area-inset-top)) var(--gutter) 8px; background: #142530; color: #b5e6ff; font-size: 13px;
+}
+.banner button { height: 36px; padding: 0 14px; border: 0; border-radius: 8px; background: var(--accent); color: var(--bg); font-weight: 700; }
+.foot p { margin: 0 0 6px; font-size: 12px; color: var(--sub2); }
+.foot-btns { display: flex; justify-content: center; flex-wrap: wrap; gap: 0 14px; }
+.foot .legal { margin-top: 10px; font-size: 11px; line-height: 1.5; color: #6b707a; }
+
+/* 전체 화면(곡 상세 / 갱신 결과) */
+body.screen-open { overflow: hidden; }
+.screen {
+  position: fixed; inset: 0; z-index: 8; overflow-y: auto; background: var(--bg);
+  padding: env(safe-area-inset-top) 0 calc(24px + env(safe-area-inset-bottom));
+}
+.sub-head { display: flex; align-items: center; gap: 8px; padding: 14px 12px 8px; font-size: 15px; font-weight: 600; }
+.back { width: 44px; height: 44px; border: 0; border-radius: 10px; background: none; display: grid; place-items: center; }
+.back:active { background: var(--card); }
+.card { margin: 0 var(--gutter) 12px; padding: 14px; border-radius: 14px; background: var(--card); }
+.card h2, .sec { margin: 0 0 10px; font-size: 14px; font-weight: 600; color: var(--soft); }
+.sec { margin: 6px var(--gutter) 10px; }
+.muted { margin: 4px 0; font-size: 12px; color: var(--sub2); }
+
+.song-head { display: flex; gap: 14px; align-items: center; padding: 6px var(--gutter) 14px; }
+.jacket.lg { flex: 0 0 96px; width: 96px; height: 96px; border-radius: 12px; }
+.jacket.lg .ph { font-size: 34px; }
+.song-head h1 { margin: 0; font-size: 20px; line-height: 1.3; }
+.song-head .en { display: block; margin-top: 2px; font-size: 13px; color: var(--sub); }
+.chart-tag, .ct { font-family: var(--font-num); font-weight: 700; }
+.chart-tag { display: inline-block; margin-top: 6px; font-size: 18px; }
+.c-single { color: #ffb49e; }
+.c-double { color: #9be8b4; }
+
+.best-main { display: flex; align-items: baseline; gap: 12px; }
+.best-main .bg { font-family: var(--font-num); font-weight: 700; font-size: 34px; }
+.best-main .bs { font-family: var(--font-num); font-weight: 700; font-size: 30px; }
+.best-main .bp { margin-left: auto; font-family: var(--font-num); font-weight: 700; font-size: 22px; }
+.best-sub { margin: 4px 0 12px; font-size: 12px; color: var(--sub2); }
+.up-text { color: var(--accent); font-weight: 600; }
+.judges { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.jd { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 8px; border-radius: 8px; background: var(--bg); }
+.jd span { font-family: var(--font-num); font-weight: 700; font-size: 13px; }
+.jd b { font-family: var(--font-num); font-size: 16px; font-weight: 600; }
+.j-p { color: #9fd5ff; }
+.j-gr { color: #8be3a8; }
+.j-go { color: #e6d29a; }
+.j-b { color: #f2a53c; }
+.j-m { color: #ff8a8a; }
+.j-c { color: var(--soft); }
+
+.hist { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; }
+.hist li { display: flex; align-items: baseline; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); }
+.hist .d { width: 44px; font-size: 12px; color: var(--sub2); }
+.hist .g { width: 42px; font-family: var(--font-num); font-weight: 700; font-size: 16px; }
+.hist .s { font-family: var(--font-num); font-size: 16px; }
+.hist .pl { width: 40px; font-family: var(--font-num); font-weight: 700; font-size: 13px; }
+.hist .dl { margin-left: auto; font-size: 12px; color: var(--sub); }
+.hist .dl.up { color: var(--accent); font-family: var(--font-num); font-size: 15px; font-weight: 600; }
+.hist .dl.first { color: #8be3a8; }
+
+.play { padding: 8px 0; border-top: 1px solid var(--line); }
+.card h2 + .play { border-top: 0; }
+.pr { display: flex; align-items: baseline; gap: 10px; }
+.pr .w { width: 84px; font-size: 12px; color: var(--sub2); }
+.pr .g { font-family: var(--font-num); font-weight: 700; font-size: 16px; }
+.pr .s { font-family: var(--font-num); font-size: 16px; }
+.pr .pl { font-family: var(--font-num); font-weight: 700; font-size: 13px; }
+.jt { display: block; margin-top: 2px; font-size: 11px; color: var(--sub2); }
+.best-tag {
+  padding: 0 5px; border-radius: 4px; background: var(--accent); color: var(--bg);
+  font-family: var(--font-num); font-weight: 700; font-size: 11px; line-height: 16px;
+}
+
+/* 최근 플레이 / 통계 공통 */
+.tab-head { display: flex; justify-content: space-between; align-items: baseline; padding: 4px var(--gutter) 10px; }
+.tab-head h1 { margin: 0; font-size: 20px; }
+.tab-head span { font-size: 12px; color: var(--sub2); }
+.note { margin: 0 var(--gutter) 12px; font-size: 11px; line-height: 1.5; color: var(--sub2); }
+.day { margin-bottom: 16px; }
+.day-head { display: flex; justify-content: space-between; align-items: baseline; padding: 0 var(--gutter) 6px; }
+.day-head h2 { margin: 0; font-size: 15px; }
+.day-head span { font-size: 12px; color: var(--sub2); }
+.rp, .chg {
+  width: calc(100% - 24px); margin: 0 12px 6px; display: flex; align-items: center; gap: 10px; padding: 8px;
+  border: 0; border-radius: 10px; background: var(--card2); text-align: left;
+}
+.rp-body, .chg-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.rp-top, .rp-mid { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.rp-top .nm { min-width: 0; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rp-top .ct { font-size: 14px; }
+.rp-mid .g { font-family: var(--font-num); font-weight: 700; font-size: 15px; }
+.rp-mid .s { font-family: var(--font-num); font-size: 15px; }
+.rp-mid .pl { font-family: var(--font-num); font-weight: 700; font-size: 12px; }
+.rp-mid .t { margin-left: auto; font-size: 11px; color: var(--sub2); }
+.rp-mid .before { font-size: 12px; color: var(--sub2); }
+
+/* 갱신 결과 */
+.result-head { justify-content: space-between; padding: 16px 12px 12px var(--gutter); }
+.result-head h1 { margin: 0; font-size: 22px; }
+.result-head span { font-size: 12px; font-weight: 400; color: var(--sub2); }
+.stat-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0 var(--gutter) 12px; }
+.stat-tiles div { display: flex; flex-direction: column; align-items: center; padding: 12px 0; border-radius: 12px; background: var(--card); }
+.stat-tiles b { font-family: var(--font-num); font-size: 30px; }
+.stat-tiles span { font-size: 12px; color: var(--sub); }
+.c-up { color: var(--accent); }
+.c-clear { color: #8be3a8; }
+.pumb-row { display: flex; align-items: baseline; gap: 8px; }
+.pumb-row .k, .pumb-top .k { font-family: var(--font-num); font-weight: 700; font-size: 14px; color: var(--soft); letter-spacing: 0.04em; }
+.pumb-row .v { font-family: var(--font-num); font-weight: 700; font-size: 22px; }
+.pumb-row .v.old { color: var(--sub2); font-size: 18px; }
+.dv { margin-left: auto; font-family: var(--font-num); font-weight: 700; font-size: 18px; color: var(--accent); }
+.changes { list-style: none; margin: 0; padding: 0; }
+.tag { padding: 0 5px; border-radius: 4px; font-size: 10px; font-weight: 700; line-height: 16px; color: var(--bg); white-space: nowrap; }
+.t-grade { background: #f5c542; }
+.t-plate { background: #8be3a8; }
+.t-first { background: var(--accent); }
+.dlt { font-family: var(--font-num); font-weight: 700; font-size: 16px; color: var(--accent); }
+.result-foot { padding: 12px var(--gutter); }
+.result-foot .refresh { width: 100%; }
+
+/* 통계 */
+.pumb-top { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+.pumb-top .v { font-family: var(--font-num); font-weight: 700; font-size: 30px; }
+.stats-seg { padding-top: 2px; }
+.levels { display: flex; flex-direction: column; gap: 8px; padding: 0 var(--gutter); }
+.lv-card { padding: 10px 12px; border-radius: 12px; background: var(--card); }
+.lv-top { display: flex; align-items: center; gap: 10px; }
+.lv { width: 36px; font-family: var(--font-num); font-weight: 700; font-size: 18px; }
+.bar { flex: 1; height: 8px; border-radius: 4px; background: var(--bg); overflow: hidden; }
+.bar span { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
+.cl { font-family: var(--font-num); font-size: 15px; color: var(--soft); min-width: 54px; text-align: right; }
+.lv-bot { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 6px; font-family: var(--font-num); font-weight: 600; font-size: 13px; }
+.lv-bot .pls { margin-left: auto; color: var(--sub2); font-weight: 500; }

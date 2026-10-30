@@ -12,8 +12,14 @@
       href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap"
     />
     <link rel="stylesheet" href="./src/style.css" />
+    <link rel="stylesheet" href="./src/screens.css" />
   </head>
   <body>
+    <div class="banner" id="update-banner" hidden>
+      <span id="update-text"></span>
+      <button type="button" id="update-btn">업데이트</button>
+    </div>
+
     <header class="top">
       <div class="row">
         <span class="brand">P-ARCHIVE</span>
@@ -68,19 +74,25 @@
       <div id="board"></div>
     </section>
 
-    <!-- 2. 최근 플레이 (B4) -->
-    <section class="tab" id="tab-recent" hidden>
-      <p class="empty-note">최근 플레이 화면은 준비 중이에요.</p>
-    </section>
+    <!-- 2. 최근 플레이 -->
+    <section class="tab" id="tab-recent" hidden></section>
 
-    <!-- 3. 통계 (B4) -->
-    <section class="tab" id="tab-stats" hidden>
-      <p class="empty-note">통계 화면은 준비 중이에요.</p>
-    </section>
+    <!-- 3. 통계 -->
+    <section class="tab" id="tab-stats" hidden></section>
 
     <footer class="foot">
-      <button type="button" class="link" id="logout">로그아웃 · 저장된 로그인 정보 지우기</button>
+      <p id="app-info"></p>
+      <div class="foot-btns">
+        <button type="button" class="link" id="check-update">업데이트 확인</button>
+        <button type="button" class="link" id="logout">로그아웃 · 저장된 로그인 정보 지우기</button>
+      </div>
+      <p class="legal">P-ARCHIVE는 안다미로의 공식 앱이 아니며 안다미로와 관련이 없습니다.
+        PUMP IT UP 상표와 곡·자켓 이미지의 권리는 안다미로(ANDAMIRO)에 있습니다.</p>
     </footer>
+
+    <!-- 곡 상세 / 갱신 결과: 전체 화면으로 덮는다 -->
+    <section class="screen" id="detail" hidden aria-label="곡 상세"></section>
+    <section class="screen" id="result" hidden aria-label="갱신 결과"></section>
 
     <nav class="tabbar" aria-label="메인 메뉴">
       <button type="button" data-tab="board">기록표</button>

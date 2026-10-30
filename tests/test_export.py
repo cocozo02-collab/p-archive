@@ -27,7 +27,7 @@ class ExportTest(unittest.TestCase):
             c = t.conn
             sid = catalog.upsert_song(c, MIX, {"name": "Good Night", "artist": "X"}, "ts")
             catalog.upsert_chart(c, sid, MIX, {"id": "uuid-1", "type": "Single", "level": 20}, "ts")
-            catalog.upsert_piugame_song(c, MIX, "h1", "굿 나이트", None, "records", "ts")
+            catalog.upsert_piugame_song(c, MIX, "h1", "굿 나이트", "https://piugame.com/data/song_img2/h1.png", "records", "ts")
             catalog.upsert_piugame_song(c, MIX, "h2", "미매칭 곡", None, "records", "ts")
             jacket = t.root / "jackets" / "piugame" / "h1.png"
             jacket.parent.mkdir(parents=True)
@@ -35,12 +35,13 @@ class ExportTest(unittest.TestCase):
             catalog.set_piugame_jacket(c, MIX, "h1", "jackets/piugame/h1.png", 1, "x")
             catalog.set_match(c, MIX, "h1", sid, "sha", None)
 
-            r = export_catalog(c, out_dir=t.root / "export")
+            r = export_catalog(c, out_dir=t.root / "export", with_thumbnails=True)
             data = json.loads((t.root / "export" / "catalog.json").read_text(encoding="utf-8"))
             key = song_key("Good Night")
             self.assertEqual(data["songs"][0]["name_ko"], "굿 나이트")
             self.assertEqual(data["songs"][0]["jacket"], f"jackets/{key}.webp")
             self.assertEqual(data["songs"][0]["jacket_sha256"], ["x"])
+            self.assertEqual(data["songs"][0]["jacket_url"], "https://piugame.com/data/song_img2/h1.png")
             self.assertEqual(data["charts"][0], {"id": "uuid-1", "song": key, "type": "Single", "level": 20,
                                                  "note_count": None, "step_artist": None})
             self.assertEqual(sorted((p["hash"], p["song"]) for p in data["piugame_songs"]),

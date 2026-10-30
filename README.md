@@ -1,60 +1,67 @@
-# P-archive
+# P-ARCHIVE
 
-펌프잇업 Phoenix 2 기록을 레벨별 기록표로 보는 도구.
+펌프잇업 피닉스 2 기록을 레벨별 기록표로 보는 비공식 안드로이드 앱.
 
-- **PC (Python, 이 저장소)**: 곡 목록 동기화와 앱용 카탈로그(곡·채보·한국어 곡명·자켓 썸네일) 내보내기.
-- **안드로이드 앱 (`mobile/`)**: 각자 폰에서 piugame.com에 로그인해 자기 기록을 받아 보여준다.
-  최고 기록이 바뀔 때마다 이력을 남기고, 갱신마다 공식 PUMBILITY를 저장한다.
-  piugame.com은 최근 플레이를 약 50개만 보여주므로 앱은 갱신할 때마다 최근 플레이를 중복 없이 쌓아 둔다.
+> **안내**: P-ARCHIVE는 안다미로(ANDAMIRO)가 만든 공식 앱이 아니며, 안다미로의 승인을 받거나 제휴한 앱이 아닙니다.
+> PUMP IT UP 상표, 곡 정보와 자켓 이미지 등에 대한 권리는 안다미로에 있습니다.
+> 이 저장소와 릴리스에는 자켓 이미지가 들어 있지 않습니다. 앱이 piugame.com에서 필요할 때 받아 폰에만 저장합니다.
 
-## 설치 (Windows, PowerShell)
+## 다운로드
+
+[최신 APK 받기](https://github.com/OWNER/p-archive/releases/latest/download/p-archive.apk) · [모든 릴리스](https://github.com/OWNER/p-archive/releases)
+
+설치할 때 "출처를 알 수 없는 앱 설치"를 허용해야 합니다. 새 버전이 나오면 앱 안에서 바로 업데이트할 수 있습니다.
+
+## 기능
+
+- **기록표**: 레벨을 고르면 그 레벨 채보가 자켓 타일로 나온다. 등급·플레이트·점수, 이번 갱신에서 오른 기록(▲),
+  격자/목록 보기, 점수순·이름순·등급순(등급 구역) 정렬, 곡명 한/영 전환.
+- **곡 상세**: 최고 기록, 판정 수(맥스 콤보는 점수와 판정 수로 계산), 점수 변화 그래프, 기록 이력, 플레이 이력.
+- **최근 플레이**: 날짜별 플레이와 판정 수, 최고 기록을 세운 플레이(BEST).
+- **갱신 결과**: 오른 기록, 새 클리어, PUMBILITY 변화.
+- **통계**: PUMBILITY 추이, 레벨별 클리어·등급·플레이트.
+
+## 개인정보와 동작 방식
+
+- 각자 자기 폰에서 piugame.com(AM-PASS 계정)에 로그인해 자기 기록을 받는다. 서버가 따로 없고, 기록은 폰 안(SQLite)에만 저장된다.
+- 비밀번호는 기본적으로 저장하지 않는다(로그인 요청에만 쓰고 버린다). "로그인 정보 기억"을 켜면 안드로이드 보안 저장소(Keystore)에 저장된다.
+- 앱 데이터는 클라우드 백업에서 제외된다.
+- piugame.com에는 "기록 갱신"을 누를 때만 요청하고, 요청 사이에 1.5초 간격을 둔다. 자동으로 주기적으로 가져오지 않는다.
+- **piugame.com은 최근 플레이를 약 50개만 보여준다.** 앱은 갱신할 때마다 최근 플레이를 중복 없이 쌓아 두므로,
+  갱신 사이에 50플레이를 넘기면 그 사이의 오래된 플레이는 받을 수 없다.
+- 최고 기록이 바뀌면 이전 값과 새 값을 이력으로 남기고, 갱신마다 공식 PUMBILITY 값을 저장한다.
+
+## 저장소 구성
+
+| 경로 | 내용 |
+|---|---|
+| `mobile/` | 안드로이드 앱 (Capacitor 8 + Vite + TypeScript). 빌드 방법은 [mobile/README.md](mobile/README.md) |
+| `app/`, `scripts/` | 곡 목록(카탈로그) 동기화·내보내기 도구 (Python, 개발자용) |
+| `docs/UI-SPEC.md` | 화면 사양 |
+
+### 곡 목록 도구 (개발자용)
+
+곡·채보 목록과 한국어 곡명을 모아 앱에 넣을 `catalog.json`을 만든다. 실행하려면 `.env` 설정이 필요하다(`.env.example` 참고).
 
 ```powershell
 python -m venv .venv
 .venv\Scripts\python -m pip install -r requirements.txt
-Copy-Item .env.example .env   # PIU_ID / PIU_PASSWORD / PIU_SCORES_TOKEN 입력 후 저장
+.venv\Scripts\python scripts\sync_catalog.py      # 곡 목록 동기화 (--full: 한국어 곡명 페이지 전체 다시 받기)
+.venv\Scripts\python scripts\export_catalog.py    # export/catalog/catalog.json (자켓 이미지 없음)
+.venv\Scripts\python -m unittest discover -s tests -t .
 ```
 
-PIU Scores 토큰: https://piuscores.arroweclip.se 로그인 → 오른쪽 위 아바타 → 나의 계정 → API 탭 → Copy Token.
-(New Token을 누르면 이전 토큰은 바로 무효가 된다.)
+- 곡 매칭은 자켓 내용 해시(SHA-256)로 하고, 해시로 안 되는 곡은 `seeds/manual_song_map.json`으로 지정한다.
+- 비밀번호, 세션 쿠키, 토큰은 로그와 예외 메시지에서 `***`로 가려진다.
+- piugame.com은 중간 인증서를 보내지 않아서 `certs/sectigo-dv-r36.pem`(Sectigo Public Server Authentication CA DV R36,
+  SHA-256 `8C:54:C3:34:…:A4:EF:22:E0`)을 더해 검증한다. 인증서 검증을 끄지 않는다.
 
-## 곡 목록 동기화 → 앱용 카탈로그
+### 릴리스 (관리자용)
 
-```powershell
-.venv\Scripts\python scripts\sync_catalog.py          # PIU Scores 곡·채보 + 필요한 경우만 Over Lv.20 Ranking(한국어 곡명) + 자켓 매칭
-.venv\Scripts\python scripts\sync_catalog.py --full   # Over Lv.20 Ranking 전체를 다시 받음
-.venv\Scripts\python scripts\export_catalog.py        # export/catalog/catalog.json + jackets/*.webp
-```
+- 앱: 태그 `v<버전>`에 `p-archive.apk`를 첨부한다. 앱은 이 릴리스를 보고 업데이트를 안내한다.
+- 곡 목록: 태그 `catalog-<YYYYMMDDHHmm>`(내보낸 시각, UTC)에 `catalog.json`을 첨부한다. 앱이 받아서 바로 적용한다.
+- 자세한 순서는 [mobile/README.md](mobile/README.md#릴리스).
 
-- 첫 동기화는 piugame.com 요청 약 660회(1.5초 간격, 약 17분). 이후에는 한국어 곡명이 필요한 새 곡이 있을 때만 piugame에 요청한다.
-- 곡 매칭: 수동 매핑(`seeds/manual_song_map.json`, 지정 시 우선) → 자켓 내용 해시(크기로 후보를 좁힌 뒤 SHA-256 비교).
-- 자켓 원본은 `data/jackets/`에 캐시되므로 중간에 끊겨도 다시 실행하면 이어서 한다.
-- 진행 로그: `data/logs/`.
+## 라이선스
 
-## 검증용 스크립트
-
-```powershell
-.venv\Scripts\python scripts\verify_crawler.py                  # 로그인 → 게임카드/최고 기록/최근 플레이 출력
-.venv\Scripts\python scripts\verify_crawler.py --check-session  # 저장된 세션이 아직 유효한지 확인
-.venv\Scripts\python scripts\sync_records.py                    # 내 기록을 PC DB에 저장 (앱 로직 검증용)
-.venv\Scripts\python -m unittest discover -s tests -t .         # 테스트
-```
-
-## 데이터 위치 (모두 .gitignore 대상)
-
-| 경로 | 내용 |
-|---|---|
-| `data/p-archive.db` | SQLite (스키마: `app/migrations/`) |
-| `data/sessions/user_<id>.json` | 사용자별 piugame 세션 쿠키 (비밀번호는 저장하지 않음) |
-| `data/jackets/` | 자켓 원본 캐시 |
-| `data/html/`, `data/logs/` | 받은 HTML(진단용), 로그 |
-| `export/catalog/` | 앱용 카탈로그 |
-
-경로는 `.env`의 `DATA_DIR`, `DB_PATH`로 바꿀 수 있다.
-
-## 보안
-
-- 비밀번호는 저장하지 않는다. `.env`에서 읽거나 실행할 때 입력받는다.
-- 비밀번호, sid, PIU Scores 토큰은 로그·예외 메시지·트레이스백에서 `***`로 가려진다(`app/redact.py`).
-- piugame.com은 중간 인증서를 보내지 않는다. `certs/sectigo-dv-r36.pem`(Sectigo Public Server Authentication CA DV R36,
-  SHA-256 `8C:54:C3:34:…:A4:EF:22:E0`, 2036-03-21 만료)을 certifi 번들에 더해 검증한다. 검증을 끄지 않는다.
+소스 코드는 [MIT](LICENSE). PUMP IT UP 관련 상표와 콘텐츠는 이 라이선스에 포함되지 않는다.

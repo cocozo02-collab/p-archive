@@ -1,8 +1,9 @@
 """앱용 카탈로그 내보내기.
 
 출력(export/catalog/):
-  catalog.json        곡·채보·piugame 해시 대응표. 앱은 기록의 자켓 해시로 곡을 찾는다.
-  jackets/<key>.webp  정사각형 썸네일 (원본 16:9 자켓의 가운데를 잘라 줄임)
+  catalog.json        곡·채보·piugame 해시 대응표·자켓 URL. 앱은 기록의 자켓 해시로 곡을 찾는다.
+  jackets/<key>.webp  (with_thumbnails=True일 때만) 정사각형 썸네일. 저작권 때문에 저장소와 릴리스에는
+                      넣지 않는다. 앱은 자켓 URL로 piugame.com에서 필요할 때 받아 폰에 캐시한다.
 
 곡 키(key)는 PIU Scores 영어 곡명에서 만든 짧은 해시라서, 다시 내보내도 같은 곡은 같은 키를 쓴다.
 채보는 PIU Scores 채보 UUID를 그대로 쓴다.
@@ -65,38 +66,43 @@ def _jacket_source(conn: sqlite3.Connection, song: sqlite3.Row, piuscores: PiuSc
 
 
 def export_catalog(conn: sqlite3.Connection, mix: str = config.MIX, out_dir: Path = EXPORT_DIR,
-                   thumb_size: int = 192, quality: int = 80) -> dict:
+                   thumb_size: int = 192, quality: int = 80, with_thumbnails: bool = False) -> dict:
     token = config.piu_scores_token()
-    piuscores = PiuScoresClient(token) if token else None
+    piuscores = PiuScoresClient(token) if token and with_thumbnails else None
 
     if out_dir.exists():
         shutil.rmtree(out_dir)
     jackets_dir = out_dir / "jackets"
-    jackets_dir.mkdir(parents=True)
+    out_dir.mkdir(parents=True)
+    if with_thumbnails:
+        jackets_dir.mkdir()
 
     songs_out, missing_jackets = [], []
     songs = conn.execute("SELECT * FROM songs WHERE mix = ? ORDER BY name_en", (mix,)).fetchall()
     for i, s in enumerate(songs, 1):
         key = song_key(s["name_en"])
         hashes = conn.execute(
-            "SELECT piugame_hash, name_ko, jacket_sha256 FROM piugame_songs WHERE song_id = ? ORDER BY updated_at DESC",
+            "SELECT piugame_hash, name_ko, jacket_sha256, jacket_url FROM piugame_songs WHERE song_id = ? ORDER BY updated_at DESC",
             (s["id"],)).fetchall()
         name_ko = next((h["name_ko"] for h in hashes if h["name_ko"]), None)
         # 앱은 처음 보는 piugame 자켓을 받아 이 해시들과 비교해 곡을 찾는다(PC 매칭과 같은 규칙).
         shas = sorted({x for x in [s["cdn_sha256"], *(h["jacket_sha256"] for h in hashes)] if x})
 
+        # 앱이 받을 piugame.com 자켓 주소(가장 최근 해시). 모르는 곡은 앱이 색 타일로 보여주다가 플레이하면 받는다.
+        jacket_url = next((h["jacket_url"] for h in hashes if h["jacket_url"]), None)
         jacket = None
-        src = _jacket_source(conn, s, piuscores)
-        if src:
-            (jackets_dir / f"{key}.webp").write_bytes(square_thumb(src.read_bytes(), thumb_size, quality))
-            jacket = f"jackets/{key}.webp"
-        else:
+        if with_thumbnails:
+            src = _jacket_source(conn, s, piuscores)
+            if src:
+                (jackets_dir / f"{key}.webp").write_bytes(square_thumb(src.read_bytes(), thumb_size, quality))
+                jacket = f"jackets/{key}.webp"
+        if not jacket_url:
             missing_jackets.append(s["name_en"])
 
         songs_out.append({
             "key": key, "name_en": s["name_en"], "name_ko": name_ko, "artist": s["artist"],
             "bpm_min": s["bpm_min"], "bpm_max": s["bpm_max"], "song_type": s["song_type"],
-            "channel": s["channel"], "jacket": jacket, "jacket_sha256": shas,
+            "channel": s["channel"], "jacket": jacket, "jacket_url": jacket_url, "jacket_sha256": shas,
         })
         if i % 50 == 0 or i == len(songs):
             log.info("내보내기 %d/%d", i, len(songs))
@@ -115,13 +121,13 @@ def export_catalog(conn: sqlite3.Connection, mix: str = config.MIX, out_dir: Pat
 
     catalog_json = {
         "format": FORMAT_VERSION, "mix": mix, "generated_at": now(),
-        "thumb": {"size": thumb_size, "format": "webp", "quality": quality},
+        "thumb": {"size": thumb_size, "format": "webp", "quality": quality} if with_thumbnails else None,
         "songs": songs_out, "charts": charts_out, "piugame_songs": piugame_out,
     }
     path = out_dir / "catalog.json"
     path.write_text(json.dumps(catalog_json, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
-    thumbs = list(jackets_dir.glob("*.webp"))
+    thumbs = list(jackets_dir.glob("*.webp")) if with_thumbnails else []
     return {
         "out_dir": str(out_dir), "songs": len(songs_out), "charts": len(charts_out),
         "piugame_songs": len(piugame_out), "songs_with_name_ko": sum(1 for s in songs_out if s["name_ko"]),

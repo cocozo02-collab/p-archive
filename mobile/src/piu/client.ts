@@ -23,14 +23,25 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 /** 새 세션의 첫 요청이 am-pass.net을 거쳐 깨진 /ssoc URL로 끝나는 경우. 쿠키는 이미 받았으므로 다시 요청하면 된다. */
 class SsoBounce extends Error {}
 
+// 요청 간격은 앱 전체에서 하나로 지킨다(기록 갱신과 자켓 받기가 동시에 돌아도 1.5초 간격).
+let queue: Promise<void> = Promise.resolve();
+let lastRequest = 0;
+
+function waitTurn(): Promise<void> {
+  const turn = queue.then(async () => {
+    const remaining = lastRequest + REQUEST_DELAY_MS - Date.now();
+    if (remaining > 0) await sleep(remaining);
+    lastRequest = Date.now();
+  });
+  queue = turn.catch(() => undefined);
+  return turn;
+}
+
 export class PiuClient {
   requestCount = 0;
-  private lastRequest = 0;
 
   private async waitTurn(): Promise<void> {
-    const remaining = this.lastRequest + REQUEST_DELAY_MS - Date.now();
-    if (remaining > 0) await sleep(remaining);
-    this.lastRequest = Date.now();
+    await waitTurn();
   }
 
   private async request(

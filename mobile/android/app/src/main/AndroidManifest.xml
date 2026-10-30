@@ -43,4 +43,6 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- 앱 안 업데이트: 받은 새 APK로 설치 화면을 띄운다(사용자가 직접 확인해야 설치됨). -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 </manifest>

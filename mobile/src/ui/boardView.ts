@@ -1,6 +1,7 @@
 // 기록표 화면 조각(격자 타일, 목록 행, 등급 구역). 색은 docs/UI-SPEC.md, 배치는 목업 1~3번 화면.
 
-import { type Group, hasRecord, type Lang, type Tile, tileName } from "../board";
+import { type Group, hasRecord, type Lang, type SongView, type Tile, tileName } from "../board";
+import { jacketSrc } from "../jackets";
 
 export const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
@@ -26,10 +27,16 @@ function placeholderColor(key: string): string {
   return PLACEHOLDER[h % PLACEHOLDER.length];
 }
 
-export function jacketHtml(t: Tile, lang: Lang): string {
+/**
+ * 자켓 자리. 캐시된 자켓이 있으면 바로 보여주고, 없으면 색 타일 + 첫 글자를 두고
+ * data-jk/data-src로 지연 로딩 대상으로 표시한다(jackets.ts가 화면에 보일 때 받아 넣는다).
+ */
+export function jacketBox(t: SongView, lang: Lang, cls = "jacket", extra = ""): string {
   const initial = esc([...tileName(t, lang)][0] ?? "?");
-  const img = t.jacket ? `<img src="${esc(t.jacket)}" alt="" loading="lazy" onerror="this.remove()" />` : "";
-  return `<span class="ph" style="background:${placeholderColor(t.key)}" aria-hidden="true">${initial}</span>${img}`;
+  const src = jacketSrc(t.jk);
+  const img = src ? `<img src="${esc(src)}" alt="" />` : "";
+  const lazy = !src && t.jk && t.jsrc ? ` data-jk="${esc(t.jk)}" data-src="${esc(t.jsrc)}"` : "";
+  return `<span class="${cls}"${lazy}><span class="ph" style="background:${placeholderColor(t.key)}" aria-hidden="true">${initial}</span>${img}${extra}</span>`;
 }
 
 const fmtScore = (n: number | null) => (n == null ? "" : n.toLocaleString("en-US"));
@@ -54,7 +61,7 @@ export function tileHtml(t: Tile, o: { lang: Lang; showName: boolean; scoreBand:
   const name = o.showName ? `<span class="name">${esc(tileName(t, o.lang))}</span>` : "";
   const score = o.scoreBand ? "" : `<span class="score${has ? "" : " none"}">${has ? fmtScore(r!.score) : "기록 없음"}</span>`;
   return `<li><button type="button" class="tile${has ? "" : " empty"}${t.improved && has ? " improved" : ""}" data-key="${esc(t.key)}">
-    <span class="jacket">${jacketHtml(t, o.lang)}${up}${badge}${band}</span>${name}${score}</button></li>`;
+    ${jacketBox(t, o.lang, "jacket", up + badge + band)}${name}${score}</button></li>`;
 }
 
 /** 목록 행: 자켓(44px), 곡명, 채보·날짜, 등급, 점수, 플레이트. */
@@ -67,7 +74,7 @@ export function rowHtml(t: Tile, o: { lang: Lang; chart: string }): string {
     : r?.status === "pass" && r.plate ? `<span class="pl ${plateClass(r.plate)}">${r.plate}</span>` : `<span class="pl"></span>`;
   const date = has && r!.played_at ? ` · ${fmtDate(r!.played_at)}` : "";
   return `<li><button type="button" class="row-item${has ? "" : " empty"}${t.improved && has ? " improved" : ""}" data-key="${esc(t.key)}">
-    <span class="jacket sm">${jacketHtml(t, o.lang)}</span>
+    ${jacketBox(t, o.lang, "jacket sm")}
     <span class="meta"><span class="nm">${esc(tileName(t, o.lang))}</span><span class="sb">${o.chart}${date}</span></span>
     <span class="gs">${grade}<span class="sc">${has ? fmtScore(r!.score) : "기록 없음"}</span></span>${plate}</button></li>`;
 }

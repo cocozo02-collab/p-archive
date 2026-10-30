@@ -1,7 +1,7 @@
 """앱용 카탈로그 내보내기 (sync_catalog 다음에 실행).
 
-  python scripts/export_catalog.py                 export/catalog/ 에 catalog.json + jackets/*.webp
-  python scripts/export_catalog.py --size 160 --quality 75
+  python scripts/export_catalog.py                    export/catalog/catalog.json (자켓 이미지 없음, 릴리스용)
+  python scripts/export_catalog.py --with-thumbnails  로컬 확인용으로 jackets/*.webp도 만든다(배포하지 않는다)
 """
 
 import argparse
@@ -24,10 +24,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="앱용 카탈로그 내보내기")
     parser.add_argument("--size", type=int, default=192, help="썸네일 한 변(px), 기본 192")
     parser.add_argument("--quality", type=int, default=80, help="WebP 품질, 기본 80")
+    parser.add_argument("--with-thumbnails", action="store_true", help="로컬 확인용 썸네일도 만든다(배포 금지)")
     args = parser.parse_args()
 
     try:
-        r = export_catalog(connect(), thumb_size=args.size, quality=args.quality)
+        r = export_catalog(connect(), thumb_size=args.size, quality=args.quality, with_thumbnails=args.with_thumbnails)
     except Exception:
         logging.getLogger("export_catalog").exception("내보내기 실패")
         return 1
@@ -38,7 +39,7 @@ def main() -> int:
     print(f"catalog.json: {kb(r['catalog_json_bytes'])} (gzip {kb(r['catalog_json_gzip_bytes'])})")
     print(f"썸네일: {r['thumbnails']}장, 합계 {kb(r['thumbnails_bytes'])}"
           f" (평균 {kb(r['thumbnails_bytes'] // max(r['thumbnails'], 1))})")
-    _cli.print_list("자켓 없는 곡", r["missing_jackets"], str)
+    _cli.print_list("piugame 자켓 주소를 모르는 곡 (앱에서 색 타일로 표시)", r["missing_jackets"], str)
     print(f"\n로그: {log_file}")
     return 0
 

@@ -67,6 +67,34 @@ export interface RecordRow {
   played_at: string | null;
 }
 
+export interface HistoryRow {
+  id: number;
+  piugame_hash: string;
+  old_score: number | null;
+  old_grade: string | null;
+  old_plate: string | null;
+  old_status: string | null;
+  new_score: number | null;
+  new_grade: string | null;
+  new_plate: string | null;
+  new_status: "pass" | "broken" | "stage_break";
+  tags: string; // JSON
+  kind: "change" | "baseline";
+  changed_at: string;
+  sync_run_id: number | null;
+}
+
+export interface PlayRow extends RecordRow {
+  id: number;
+  perfect: number;
+  great: number;
+  good: number;
+  bad: number;
+  miss: number;
+  set_best: number;
+  played_at: string;
+}
+
 export interface LocalSong {
   piugame_hash: string;
   name_ko: string | null;
@@ -268,6 +296,52 @@ export class Db {
   async finishRun(id: number, status: "ok" | "failed", summary: unknown): Promise<void> {
     await this.conn.run("UPDATE sync_runs SET finished_at = ?, status = ?, summary = ? WHERE id = ?",
       [now(), status, JSON.stringify(summary), id]);
+  }
+
+  async recordsByType(mix: string, chartType: string): Promise<RecordRow[]> {
+    return this.rows("SELECT * FROM records WHERE user_id = ? AND mix = ? AND chart_type = ?", [USER_ID, mix, chartType]);
+  }
+
+  private inList(n: number): string {
+    return Array(n).fill("?").join(", ");
+  }
+
+  /** 한 채보의 기록 이력(자켓 교체로 해시가 여러 개면 모두). 오래된 것부터. */
+  async historyFor(mix: string, hashes: string[], chartType: string, level: number): Promise<HistoryRow[]> {
+    if (!hashes.length) return [];
+    return this.rows(
+      `SELECT * FROM record_history WHERE user_id = ? AND mix = ? AND chart_type = ? AND level = ?
+         AND piugame_hash IN (${this.inList(hashes.length)}) ORDER BY changed_at, id`,
+      [USER_ID, mix, chartType, level, ...hashes]);
+  }
+
+  /** 한 채보의 플레이 이력. 최신부터. */
+  async playsFor(mix: string, hashes: string[], chartType: string, level: number): Promise<PlayRow[]> {
+    if (!hashes.length) return [];
+    return this.rows(
+      `SELECT * FROM plays WHERE user_id = ? AND mix = ? AND chart_type = ? AND level = ?
+         AND piugame_hash IN (${this.inList(hashes.length)}) ORDER BY played_at DESC`,
+      [USER_ID, mix, chartType, level, ...hashes]);
+  }
+
+  async recentPlays(mix: string, limit = 500): Promise<PlayRow[]> {
+    return this.rows("SELECT * FROM plays WHERE user_id = ? AND mix = ? ORDER BY played_at DESC LIMIT ?", [USER_ID, mix, limit]);
+  }
+
+  async playCount(mix: string): Promise<number> {
+    return (await this.conn.query("SELECT COUNT(*) AS n FROM plays WHERE user_id = ? AND mix = ?", [USER_ID, mix])).values?.[0]?.n ?? 0;
+  }
+
+  async pumbilityHistory(mix: string): Promise<{ value: number; fetched_at: string }[]> {
+    return this.rows("SELECT value, fetched_at FROM pumbility_history WHERE user_id = ? AND mix = ? ORDER BY fetched_at",
+      [USER_ID, mix]);
+  }
+
+  /** 성공한 갱신 시각들(최신부터). 갱신 결과 화면의 "지난 갱신 이후"에 쓴다. */
+  async syncTimes(limit = 2): Promise<string[]> {
+    return (await this.rows<{ finished_at: string }>(
+      "SELECT finished_at FROM sync_runs WHERE kind = 'records' AND status = 'ok' ORDER BY finished_at DESC LIMIT ?", [limit]))
+      .map((r) => r.finished_at);
   }
 
   /** 마지막으로 성공한 갱신에서 바뀐 기록들의 키("해시|타입|레벨"). */
