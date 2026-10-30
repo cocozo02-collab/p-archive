@@ -73,15 +73,21 @@ button { cursor: pointer; }
 .pair .tool.icon { width: 40px; justify-content: center; padding: 0; }
 .pair .tool.lang { width: 38px; justify-content: center; padding: 0; }
 .pair .tool[aria-pressed="true"] { background: var(--line); color: var(--text); font-weight: 700; }
-.tool.select { padding: 0 8px 0 0; }
-.tool.select select {
-  appearance: none; -webkit-appearance: none; border: 0; background: transparent; height: 100%; padding: 0 2px 0 10px;
-  font-size: 13px; outline: none;
+/* 정렬 메뉴: 안드로이드 기본 선택 상자 대신 앱 안 메뉴(터치 영역 덮개에 가려지지 않게) */
+.sort-wrap { position: relative; }
+.sort-wrap .caret { color: var(--sub2); }
+.sort-wrap.active .tool { border-color: var(--accent); background: #142530; color: #b5e6ff; font-weight: 700; }
+.sort-wrap.active .caret { color: #b5e6ff; }
+.menu {
+  position: absolute; top: 46px; left: 0; z-index: 7; min-width: 128px; padding: 4px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--card); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
 }
-.tool.select span { color: var(--sub2); pointer-events: none; }
-.tool.select.active { border-color: var(--accent); background: #142530; color: #b5e6ff; }
-.tool.select.active select { font-weight: 700; }
-.tool.select select option { background: var(--card); color: var(--text); }
+.menu button {
+  display: block; width: 100%; height: 44px; padding: 0 12px; border: 0; border-radius: 8px;
+  background: none; text-align: left; font-size: 14px;
+}
+.menu button:active { background: var(--line); }
+.menu button[aria-checked="true"] { color: var(--accent); font-weight: 700; }
 
 /* 요약 카드 */
 .summary { margin: 0 var(--gutter) 14px; padding: 12px; border-radius: 14px; background: var(--card); display: flex; flex-direction: column; gap: 10px; }

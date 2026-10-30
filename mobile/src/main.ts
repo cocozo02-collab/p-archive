@@ -64,7 +64,8 @@ const chartLabel = () => `${state.type === "Single" ? "S" : "D"}${state.level}`;
 function renderTools(): void {
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-view]")) b.setAttribute("aria-pressed", String(b.dataset.view === state.view));
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-lang]")) b.setAttribute("aria-pressed", String(b.dataset.lang === state.lang));
-  $<HTMLSelectElement>("sort").value = state.sort;
+  $("sort-label").textContent = { score: "점수순", name: "이름순", grade: "등급순" }[state.sort];
+  for (const b of document.querySelectorAll<HTMLButtonElement>("[data-sort]")) b.setAttribute("aria-checked", String(b.dataset.sort === state.sort));
   $("sort-wrap").classList.toggle("active", state.sort === "grade");
   const names = $("names");
   names.textContent = state.showNames ? "곡명 ON" : "곡명 OFF";
@@ -380,8 +381,18 @@ function bind(): void {
     closeScreen(b.closest<HTMLElement>(".screen")!);
     if (b.dataset.goto === "board") showTab("board");
   });
-  $<HTMLSelectElement>("sort").addEventListener("change", (e) => {
-    state.sort = (e.target as HTMLSelectElement).value as SortMode;
+  const sortMenu = (open: boolean) => {
+    $("sort-menu").hidden = !open;
+    $("sort-btn").setAttribute("aria-expanded", String(open));
+  };
+  document.addEventListener("click", (e) => {
+    const t = e.target as HTMLElement;
+    if (t.closest("#sort-btn")) sortMenu($("sort-menu").hidden !== false);
+    else if (!t.closest("#sort-menu")) sortMenu(false);
+  });
+  onClick("[data-sort]", (b) => {
+    sortMenu(false);
+    state.sort = b.dataset.sort as SortMode;
     void render(false);
   });
   $("refresh").addEventListener("click", () => void refresh());

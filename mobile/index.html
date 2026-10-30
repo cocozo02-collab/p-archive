@@ -50,14 +50,16 @@
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12" /></svg>
           </button>
         </div>
-        <label class="tool select" id="sort-wrap">
-          <select id="sort" aria-label="정렬">
-            <option value="score">점수순</option>
-            <option value="name">이름순</option>
-            <option value="grade">등급순</option>
-          </select>
-          <span aria-hidden="true">▾</span>
-        </label>
+        <div class="sort-wrap" id="sort-wrap">
+          <button type="button" class="tool" id="sort-btn" aria-haspopup="menu" aria-expanded="false">
+            <span id="sort-label">점수순</span><span class="caret" aria-hidden="true">▾</span>
+          </button>
+          <div class="menu" id="sort-menu" role="menu" hidden>
+            <button type="button" role="menuitemradio" data-sort="score">점수순</button>
+            <button type="button" role="menuitemradio" data-sort="name">이름순</button>
+            <button type="button" role="menuitemradio" data-sort="grade">등급순</button>
+          </div>
+        </div>
         <button type="button" class="tool" id="names" aria-pressed="true">곡명 ON</button>
         <div class="pair end" role="group" aria-label="곡명 언어">
           <button type="button" class="tool lang" data-lang="ko">한</button>
