@@ -1,0 +1,15 @@
+# 비밀 정보: 계정 정보, PIU Scores 토큰
+.env
+
+# 로컬 데이터: DB, 세션 쿠키(data/session.json), 저장한 HTML(data/html/), 자켓 캐시, CA 번들
+data/
+*.db
+
+# 앱용 카탈로그 내보내기 결과 (다시 만들 수 있음)
+export/
+*.sqlite3
+
+# Python
+.venv/
+__pycache__/
+*.pyc

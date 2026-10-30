@@ -1,0 +1,20 @@
+{
+  "_comment": "자켓 해시로 매칭되지 않는 piugame 곡을 직접 지정한다. 키: piugame 자켓 해시(song_img2/<hash>.png), 값: PIU Scores 영어 곡명(정확히 일치). 지정한 곡은 해시 매칭보다 우선한다.",
+  "81005e747c8bf33c392b7aea4bd41f92": "Galactic Metronome",
+  "864c2d759ecaf29bff2260d317c081ee": "Galactic Terminus",
+  "2fece5bf98cec7388dfeca3057c3b735": "The Deconstruction",
+  "dce94472834a0bb7bf8e941e7c0788f5": "The Last Stand",
+  "f1660f398538083e015611f3cad1e546": "DROP FRONT!ER",
+  "45e6716895c336db9d30fd60c107c249": "Love Witch",
+  "87c7fe03f93e41711155b4cb6d8fe208": "Reincarnate in “A”",
+  "cc15917a0c8f24c40edcd9146f010581": "Morrighan",
+  "ec32a9cc6c063f67182ca985a020a3b8": "Burning SuperNova feat. neur6sia",
+  "aaea0d72df0fa664859fe9594b24b104": "Skybound",
+  "081f5f3aeb0fc6a7613664fd06c88816": "Sylaphz",
+  "b62c203e440a8aaf7d35e9034d7f3fe1": "Assault TAXI",
+  "d6a82f4805514e117a51696f07ea798a": "Under the Christmas Stars",
+  "a2a95bd6ba8eaf53ea75dcdac32ac28a": "Chess and Chase",
+  "a5fbfc4500a56e6f40491f160df583fb": "Transmission",
+  "f16215673975220a70051d68fb6e42a9": "Pastry mix",
+  "3aee829433e43cfecd3dd42d8e0beba5": "PHYSALIS"
+}
