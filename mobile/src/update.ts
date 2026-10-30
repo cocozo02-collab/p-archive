@@ -8,7 +8,7 @@ import { Directory, Encoding, Filesystem } from "@capacitor/filesystem";
 import { type CatalogFile, DOWNLOADED_CATALOG } from "./catalog";
 
 /** 릴리스를 올리는 GitHub 저장소("계정/저장소"). */
-export const GITHUB_REPO = "OWNER/p-archive";
+export const GITHUB_REPO = "cocozo02-collab/p-archive";
 export const APK_ASSET = "p-archive.apk";
 export const CATALOG_ASSET = "catalog.json";
 

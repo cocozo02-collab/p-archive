@@ -8,7 +8,7 @@
 
 ## 다운로드
 
-[최신 APK 받기](https://github.com/OWNER/p-archive/releases/latest/download/p-archive.apk) · [모든 릴리스](https://github.com/OWNER/p-archive/releases)
+[최신 APK 받기](https://github.com/cocozo02-collab/p-archive/releases/latest/download/p-archive.apk) · [모든 릴리스](https://github.com/cocozo02-collab/p-archive/releases)
 
 설치할 때 "출처를 알 수 없는 앱 설치"를 허용해야 합니다. 새 버전이 나오면 앱 안에서 바로 업데이트할 수 있습니다.
 
