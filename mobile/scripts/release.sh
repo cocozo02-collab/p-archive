@@ -15,7 +15,7 @@ mkdir -p "$OUT"
 
 case "${1:-}" in
   app)
-    VERSION="$(node -p "require('$MOBILE/package.json').version")"
+    VERSION="$(sed -n 's/^  "version": "\(.*\)",$/\1/p' "$MOBILE/package.json")"
     GRADLE_VERSION="$(sed -n 's/.*versionName "\(.*\)".*/\1/p' "$MOBILE/android/app/build.gradle")"
     if [ "$VERSION" != "$GRADLE_VERSION" ]; then
       echo "버전이 다름: package.json $VERSION / build.gradle $GRADLE_VERSION" >&2
@@ -34,7 +34,7 @@ case "${1:-}" in
   catalog)
     FILE="$ROOT/export/catalog/catalog.json"
     [ -f "$FILE" ] || { echo "카탈로그가 없음: $FILE (scripts/export_catalog.py 먼저)" >&2; exit 1; }
-    STAMP="$(node -e "const d=new Date(JSON.parse(require('fs').readFileSync(process.argv[1],'utf8')).generated_at);const p=n=>String(n).padStart(2,'0');console.log(''+d.getUTCFullYear()+p(d.getUTCMonth()+1)+p(d.getUTCDate())+p(d.getUTCHours())+p(d.getUTCMinutes()))" "$FILE")"
+    STAMP="$(node -e "const d=new Date(JSON.parse(require('fs').readFileSync(process.argv[1],'utf8')).generated_at);const p=n=>String(n).padStart(2,'0');console.log(''+d.getUTCFullYear()+p(d.getUTCMonth()+1)+p(d.getUTCDate())+p(d.getUTCHours())+p(d.getUTCMinutes()))" "$(cygpath -m "$FILE" 2>/dev/null || echo "$FILE")")"
     echo "곡 목록 릴리스: catalog-$STAMP"
     [ "${DRY_RUN:-}" = "1" ] && exit 0
     gh release create "catalog-$STAMP" "$FILE" --title "곡 목록 $STAMP" --notes "곡 목록 업데이트 (catalog.json)" --latest=false
