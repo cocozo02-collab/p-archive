@@ -26,10 +26,13 @@ interface ViewState {
   showNames: boolean;
   lang: Lang;
   statsType: ChartType;
+  summaryOpen: boolean; // 기록표 요약 카드의 게이지·등급·플레이트
+  statsDetail: boolean; // 통계 탭 레벨 카드의 등급·플레이트 줄
 }
 
 const state: ViewState = {
   tab: "board", type: "Single", level: 0, view: "grid", sort: "score", showNames: true, lang: "ko", statsType: "Single",
+  summaryOpen: true, statsDetail: true,
 };
 let db: Db;
 let catalog: Catalog;
@@ -50,6 +53,8 @@ const prefs = {
       if (["score", "name", "grade", "plate"].includes(v.sort)) state.sort = v.sort;
       if (typeof v.showNames === "boolean") state.showNames = v.showNames;
       if (v.lang === "ko" || v.lang === "en") state.lang = v.lang;
+      if (typeof v.summaryOpen === "boolean") state.summaryOpen = v.summaryOpen;
+      if (typeof v.statsDetail === "boolean") state.statsDetail = v.statsDetail;
     } catch { /* 무시 */ }
   },
   save() {
@@ -73,7 +78,15 @@ function renderTools(): void {
   names.hidden = state.view === "list"; // 목록 보기는 곡명이 항상 보인다
 }
 
+function renderFold(): void {
+  $("sum-detail").hidden = !state.summaryOpen;
+  const t = $("sum-toggle");
+  t.textContent = state.summaryOpen ? "접기 ▴" : "게이지 · 등급 · 플레이트 보기 ▾";
+  t.setAttribute("aria-expanded", String(state.summaryOpen));
+}
+
 function renderSummary(): void {
+  renderFold();
   const s = summarize(tiles);
   $("sum-label").textContent = `${chartLabel()} 클리어`;
   $("sum-clear").textContent = String(s.clear);
@@ -147,7 +160,7 @@ async function renderStats(): Promise<void> {
   const levels = catalog.levels(state.statsType)
     .map((lv) => levelStat(lv, index.tiles(records, state.statsType, lv)))
     .filter((l) => l.total > 0);
-  el.innerHTML = statsHtml({ history: await db.pumbilityHistory(catalog.mix), type: state.statsType, levels });
+  el.innerHTML = statsHtml({ history: await db.pumbilityHistory(catalog.mix), type: state.statsType, levels, detail: state.statsDetail });
 }
 
 function showTab(tab: Tab): void {
@@ -404,6 +417,16 @@ function bind(): void {
     void renderStats();
   });
   onClick("[data-tab]", (b) => showTab(b.dataset.tab as Tab));
+  onClick("#sum-toggle", () => {
+    state.summaryOpen = !state.summaryOpen;
+    prefs.save();
+    renderFold();
+  });
+  onClick("#stats-detail", () => {
+    state.statsDetail = !state.statsDetail;
+    prefs.save();
+    void renderStats();
+  });
   onClick("[data-key]", (b) => {
     const key = b.dataset.key!;
     const view = key.startsWith("hash:") ? index.byHash(key.slice(5)) : index.bySong(key);

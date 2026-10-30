@@ -99,6 +99,17 @@ button { cursor: pointer; }
 .bands .cell { background: var(--bg); }
 .bands .cell.zero { opacity: 0.4; }
 
+/* 접기 / 펼치기 */
+.sum-detail { display: flex; flex-direction: column; gap: 10px; }
+.fold {
+  align-self: stretch; min-height: 36px; margin: -2px -4px -4px; border: 0; border-radius: 8px; background: none;
+  color: var(--sub2); font-size: 12px; position: relative;
+}
+.fold::after { content: ""; position: absolute; inset: -4px 0; }
+.fold:active { background: var(--bg); }
+.fold.inline { align-self: auto; margin: 0; padding: 0 8px; min-height: 40px; }
+.levels-head { display: flex; justify-content: space-between; align-items: center; padding: 4px var(--gutter) 6px; font-size: 14px; color: var(--soft); }
+
 /* 레벨 게이지 */
 .avg-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; color: var(--soft); }
 .avg-row b { font-family: var(--font-num); font-size: 24px; color: var(--text); }

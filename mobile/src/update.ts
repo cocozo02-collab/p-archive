@@ -104,8 +104,10 @@ export async function installApp(update: AppUpdate, progress: (msg: string) => v
     throw new Error("설정에서 'P-ARCHIVE 앱에서 설치 허용'을 켠 뒤 다시 눌러 주세요");
   }
   progress(`새 버전 ${update.version} 받는 중… (${(update.size / 1024 / 1024).toFixed(1)} MB)`);
+  // 캐시 폴더 바로 아래에 저장한다. 이 다운로드 함수는 recursive를 무시해서 하위 폴더를 만들어 주지 않는다
+  // (하위 폴더 경로를 주면 "Error downloading file: … No such file or directory"로 실패한다).
   const result = await Filesystem.downloadFile({
-    url: update.url, path: `update/${APK_ASSET}`, directory: Directory.Cache, recursive: true,
+    url: update.url, path: "p-archive-update.apk", directory: Directory.Cache,
   });
   if (!result.path) throw new Error("APK를 받지 못했습니다");
   await ApkInstaller.install({ path: result.path });

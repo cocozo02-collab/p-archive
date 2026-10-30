@@ -134,7 +134,7 @@ export function resultHtml(o: { s: SyncSummary; index: SongIndex; lang: Lang; pr
 
 /* ---------- 통계 ---------- */
 
-export function statsHtml(o: { history: { value: number; fetched_at: string }[]; type: string; levels: LevelStat[] }): string {
+export function statsHtml(o: { history: { value: number; fetched_at: string }[]; type: string; levels: LevelStat[]; detail: boolean }): string {
   const h = o.history;
   const cur = h.length ? h[h.length - 1].value : null;
   const prev = h.length > 1 ? h[h.length - 2].value : null;
@@ -146,7 +146,7 @@ export function statsHtml(o: { history: { value: number; fetched_at: string }[];
     const pct = l.total ? Math.round((l.clear / l.total) * 100) : 0;
     return `<div class="lv-card"><div class="lv-top"><span class="lv">${chartTag(o.type, l.level)}</span>
         <span class="bar"><span style="width:${pct}%"></span></span><span class="cl">${l.clear} / ${l.total}</span></div>
-      <div class="lv-bot">${l.grades.map((g) => `<span class="${gradeClass(g.grade)}">${g.grade} ${g.count}</span>`).join("") || `<span class="muted-inline">클리어 없음</span>`}
+      <div class="lv-bot"${o.detail ? "" : " hidden"}>${l.grades.map((g) => `<span class="${gradeClass(g.grade)}">${g.grade} ${g.count}</span>`).join("") || `<span class="muted-inline">클리어 없음</span>`}
         <span class="pls">${esc(l.plates)}</span></div></div>`;
   }).join("");
   return `<header class="tab-head"><h1>통계</h1></header>
@@ -155,5 +155,7 @@ export function statsHtml(o: { history: { value: number; fetched_at: string }[];
       ${cur != null && prev != null ? `<span class="dv">${fmtDelta(Math.round((cur - prev) * 100) / 100)}</span>` : ""}</div>${graph}</section>
     <div class="seg stats-seg"><button type="button" class="seg-btn single" data-stype="Single" aria-pressed="${o.type === "Single"}">SINGLE</button>
       <button type="button" class="seg-btn double" data-stype="Double" aria-pressed="${o.type === "Double"}">DOUBLE</button></div>
+    <div class="levels-head"><span>레벨별 현황</span>
+      <button type="button" class="fold inline" id="stats-detail" aria-expanded="${o.detail}">${o.detail ? "등급 접기 ▴" : "등급 펼치기 ▾"}</button></div>
     <section class="levels" aria-label="레벨별 현황">${levels}</section>`;
 }

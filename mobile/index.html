@@ -70,10 +70,13 @@
 
       <section class="summary" aria-label="요약">
         <div class="sum-head"><span id="sum-label"></span><span class="sum-count"><b id="sum-clear">0</b><span> / <span id="sum-total">0</span></span></span></div>
-        <div class="avg-row"><span>평균 점수</span><b id="sum-average">-</b></div>
-        <div class="gauges" id="gauges"></div>
-        <div class="bands" id="bands"></div>
-        <div class="plates" id="plates"></div>
+        <div class="sum-detail" id="sum-detail">
+          <div class="avg-row"><span>평균 점수</span><b id="sum-average">-</b></div>
+          <div class="gauges" id="gauges"></div>
+          <div class="bands" id="bands"></div>
+          <div class="plates" id="plates"></div>
+        </div>
+        <button type="button" class="fold" id="sum-toggle" aria-controls="sum-detail" aria-expanded="true">접기 ▴</button>
       </section>
 
       <div id="board"></div>
