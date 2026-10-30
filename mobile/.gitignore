@@ -1,3 +1,5 @@
 node_modules/
 dist/
+# PC에서 내보낸 카탈로그 복사본 (npm run catalog로 다시 만든다)
+public/catalog/
 # Capacitor가 android/ 안에 자체 .gitignore를 만든다(빌드 산출물 제외).

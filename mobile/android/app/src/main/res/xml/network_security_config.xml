@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- piugame.com은 서버 인증서만 보내고 중간 인증서(Sectigo Public Server Authentication CA DV R36)를 빠뜨린다.
+     안드로이드는 빠진 중간 인증서를 스스로 받아 오지 않으므로 그 인증서를 신뢰 앵커로 더한다.
+     시스템 인증서는 그대로 신뢰하고, 인증서 검증을 끄지 않는다.
+     인증서: SHA-256 8C:54:C3:34:B6:6B:A4:E4:26:77:2A:F4:A3:F9:13:6C:19:A1:AE:C7:29:FD:B2:8C:53:5C:07:A5:A4:EF:22:E0, 2036-03-21 만료 -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">piugame.com</domain>
+        <domain includeSubdomains="true">am-pass.net</domain>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="@raw/sectigo_dv_r36" />
+        </trust-anchors>
+    </domain-config>
+</network-security-config>

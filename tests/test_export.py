@@ -40,6 +40,7 @@ class ExportTest(unittest.TestCase):
             key = song_key("Good Night")
             self.assertEqual(data["songs"][0]["name_ko"], "굿 나이트")
             self.assertEqual(data["songs"][0]["jacket"], f"jackets/{key}.webp")
+            self.assertEqual(data["songs"][0]["jacket_sha256"], ["x"])
             self.assertEqual(data["charts"][0], {"id": "uuid-1", "song": key, "type": "Single", "level": 20,
                                                  "note_count": None, "step_artist": None})
             self.assertEqual(sorted((p["hash"], p["song"]) for p in data["piugame_songs"]),

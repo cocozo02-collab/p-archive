@@ -79,9 +79,11 @@ def export_catalog(conn: sqlite3.Connection, mix: str = config.MIX, out_dir: Pat
     for i, s in enumerate(songs, 1):
         key = song_key(s["name_en"])
         hashes = conn.execute(
-            "SELECT piugame_hash, name_ko FROM piugame_songs WHERE song_id = ? ORDER BY updated_at DESC",
+            "SELECT piugame_hash, name_ko, jacket_sha256 FROM piugame_songs WHERE song_id = ? ORDER BY updated_at DESC",
             (s["id"],)).fetchall()
         name_ko = next((h["name_ko"] for h in hashes if h["name_ko"]), None)
+        # 앱은 처음 보는 piugame 자켓을 받아 이 해시들과 비교해 곡을 찾는다(PC 매칭과 같은 규칙).
+        shas = sorted({x for x in [s["cdn_sha256"], *(h["jacket_sha256"] for h in hashes)] if x})
 
         jacket = None
         src = _jacket_source(conn, s, piuscores)
@@ -94,7 +96,7 @@ def export_catalog(conn: sqlite3.Connection, mix: str = config.MIX, out_dir: Pat
         songs_out.append({
             "key": key, "name_en": s["name_en"], "name_ko": name_ko, "artist": s["artist"],
             "bpm_min": s["bpm_min"], "bpm_max": s["bpm_max"], "song_type": s["song_type"],
-            "channel": s["channel"], "jacket": jacket,
+            "channel": s["channel"], "jacket": jacket, "jacket_sha256": shas,
         })
         if i % 50 == 0 or i == len(songs):
             log.info("내보내기 %d/%d", i, len(songs))

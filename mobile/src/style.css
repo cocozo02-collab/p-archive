@@ -1,32 +1,129 @@
-/* 색과 글꼴은 docs/UI-SPEC.md 기준. 화면 작업(A5)에서 채운다. */
+/* docs/UI-SPEC.md 기준. 안드로이드 세로 화면(360~430px) 우선, 데스크톱은 타일 열 수만 늘린다. */
 :root {
   --bg: #0e1014;
   --card: #171a20;
   --line: #2a2e36;
   --text: #e8eaee;
   --sub: #a3a9b4;
-  --font-body: "IBM Plex Sans KR", system-ui, sans-serif;
-  --font-num: "Barlow Condensed", system-ui, sans-serif;
+  --sub2: #8a909c;
+  --font-body: "IBM Plex Sans KR", system-ui, -apple-system, "Noto Sans KR", sans-serif;
+  --font-num: "Barlow Condensed", "Roboto Condensed", system-ui, sans-serif;
+  --gutter: 12px;
 }
 
-html,
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-body);
-}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-body); }
+body { padding: env(safe-area-inset-top) 0 calc(24px + env(safe-area-inset-bottom)); -webkit-tap-highlight-color: transparent; }
+button { font: inherit; color: inherit; cursor: pointer; }
 
-#app {
-  padding: 24px 16px;
+/* 1. 헤더 */
+.top { padding: 14px var(--gutter) 8px; }
+.top .row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.brand { font-family: var(--font-num); font-weight: 700; font-size: 22px; letter-spacing: 0.06em; }
+.tag { font-family: var(--font-num); font-weight: 600; font-size: 17px; color: var(--sub); }
+.top .sub { margin-top: 4px; font-size: 12px; color: var(--sub2); }
+.status { display: inline-flex; align-items: center; gap: 6px; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--sub2); display: inline-block; }
+.dot.ok { background: #3dbe6a; }
+.mix { font-family: var(--font-num); font-size: 14px; letter-spacing: 0.04em; }
+.refresh {
+  margin-top: 10px; width: 100%; min-height: 44px; border-radius: 10px;
+  background: var(--card); border: 1px solid var(--line); font-weight: 600;
 }
+.refresh:active { background: #20242c; }
 
-h1 {
-  margin: 0 0 8px;
-  font-family: var(--font-num);
-  letter-spacing: 0.04em;
+/* 2. SINGLE / DOUBLE */
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 6px var(--gutter); }
+.seg-btn {
+  height: 44px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); color: var(--sub);
+  font-family: var(--font-num); font-weight: 700; font-size: 18px; letter-spacing: 0.08em;
 }
+.seg-btn.single.on { border-color: #f2603c; background: #3a1a12; color: #ffb49e; }
+.seg-btn.double.on { border-color: #3dbe6a; background: #12301d; color: #9be8b4; }
 
-p {
-  color: var(--sub);
+/* 3. 레벨 칩 */
+.chips { display: flex; gap: 6px; overflow-x: auto; padding: 8px var(--gutter); scrollbar-width: none; scroll-snap-type: x proximity; }
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex: 0 0 auto; min-width: 44px; height: 44px; padding: 0 12px; border-radius: 22px; scroll-snap-align: center;
+  background: var(--card); border: 1px solid var(--line); font-family: var(--font-num); font-weight: 600; font-size: 18px;
 }
+.chip.on { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+/* 4. 요약 카드 */
+.summary { margin: 4px var(--gutter) 12px; padding: 12px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+.sum-head { display: flex; justify-content: space-between; align-items: baseline; font-size: 14px; color: var(--sub); }
+.sum-count { font-family: var(--font-num); font-size: 18px; color: var(--sub); }
+.sum-count b { font-size: 26px; color: var(--text); }
+.bands { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+.bands .cell { display: flex; flex-direction: column; align-items: center; padding: 6px 0; border-radius: 8px; background: var(--bg); }
+.bands .k { font-family: var(--font-num); font-weight: 600; font-size: 13px; }
+.bands b { font-family: var(--font-num); font-size: 20px; }
+
+/* 5. 자켓 타일 */
+.grid { list-style: none; margin: 0; padding: 0 var(--gutter); display: grid; grid-template-columns: repeat(5, 1fr); column-gap: 6px; row-gap: 10px; }
+@media (min-width: 600px) { .grid { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); } }
+.tile { min-width: 0; }
+.tile.empty { opacity: 0.35; }
+.jacket { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: var(--card); }
+.jacket img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.band {
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 1px 0; text-align: center;
+  background: rgba(14, 16, 20, 0.72); font-family: var(--font-num); font-weight: 700; font-size: 14px; line-height: 1.2;
+}
+.badge {
+  position: absolute; top: 3px; right: 3px; padding: 0 4px; border-radius: 4px; background: rgba(14, 16, 20, 0.8);
+  font-family: var(--font-num); font-weight: 700; font-size: 10px; line-height: 1.5; letter-spacing: 0.03em;
+}
+.name { margin-top: 4px; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.score { font-family: var(--font-num); font-weight: 600; font-size: 13px; color: var(--sub); }
+.score.none { font-family: var(--font-body); font-size: 10px; font-weight: 400; }
+.tile.orphan .name::before { content: "? "; color: var(--sub2); }
+
+/* 등급/플레이트 색 */
+.g-sss { color: #f5c542; }
+.g-ss { color: #e6d29a; }
+.g-s { color: #9fd5ff; }
+.g-aaa { color: #8be3a8; }
+.g-low { color: #c9cdd4; }
+.g-fail { color: #ff8a8a; }
+.p-top { color: #f5c542; }
+.p-high { color: #9fd5ff; }
+.p-mid { color: #8be3a8; }
+.p-low { color: #c9cdd4; }
+.b-break { color: #ff8a8a; }
+
+/* 6. 맨 아래 */
+.foot { padding: 20px var(--gutter) 0; text-align: center; font-size: 12px; color: var(--sub2); }
+.foot p { margin: 0 0 8px; }
+.link { background: none; border: 0; color: var(--sub2); text-decoration: underline; min-height: 44px; font-size: 12px; }
+
+/* 로그인 */
+dialog { width: min(92vw, 380px); padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); color: var(--text); }
+dialog::backdrop { background: rgba(0, 0, 0, 0.6); }
+dialog h2 { margin: 0 0 6px; font-size: 18px; }
+dialog .hint { margin: 0 0 12px; font-size: 12px; color: var(--sub); }
+dialog label { display: block; margin-bottom: 10px; font-size: 13px; color: var(--sub); }
+dialog input:not([type="checkbox"]) {
+  display: block; width: 100%; margin-top: 4px; height: 44px; padding: 0 10px; font: inherit; font-size: 16px;
+  color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 8px;
+}
+dialog .check { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+dialog .check input { width: 20px; height: 20px; }
+dialog .error { min-height: 1em; margin: 0 0 8px; color: #ff8a8a; font-size: 13px; }
+dialog .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+dialog .btns button { height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); }
+dialog .btns .primary { background: var(--text); color: var(--bg); border-color: var(--text); font-weight: 600; }
+
+/* 진행 표시 / 알림 */
+.overlay { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(0, 0, 0, 0.55); z-index: 10; }
+.overlay[hidden] { display: none; }
+.overlay .box { min-width: 220px; padding: 20px; text-align: center; background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
+.overlay p { margin: 12px 0 0; font-size: 14px; color: var(--sub); }
+.spinner { width: 28px; height: 28px; margin: 0 auto; border: 3px solid var(--line); border-top-color: var(--text); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.toast {
+  position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+  max-width: calc(100vw - 32px); padding: 10px 14px; border-radius: 10px; background: #2a2e36; font-size: 13px; z-index: 20;
+}
+.toast[hidden] { display: none; }
