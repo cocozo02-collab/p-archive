@@ -1,0 +1,7 @@
+# 셸 스크립트는 LF, 배치 파일은 CRLF로 고정 (Windows autocrlf로 gradlew가 깨지지 않게)
+gradlew text eol=lf
+*.sh    text eol=lf
+*.bat   text eol=crlf
+*.png   binary
+*.webp  binary
+*.jar   binary

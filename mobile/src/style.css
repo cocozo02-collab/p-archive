@@ -1,0 +1,32 @@
+/* 색과 글꼴은 docs/UI-SPEC.md 기준. 화면 작업(A5)에서 채운다. */
+:root {
+  --bg: #0e1014;
+  --card: #171a20;
+  --line: #2a2e36;
+  --text: #e8eaee;
+  --sub: #a3a9b4;
+  --font-body: "IBM Plex Sans KR", system-ui, sans-serif;
+  --font-num: "Barlow Condensed", system-ui, sans-serif;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+}
+
+#app {
+  padding: 24px 16px;
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-family: var(--font-num);
+  letter-spacing: 0.04em;
+}
+
+p {
+  color: var(--sub);
+}
