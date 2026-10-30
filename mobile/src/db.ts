@@ -270,6 +270,16 @@ export class Db {
       [now(), status, JSON.stringify(summary), id]);
   }
 
+  /** 마지막으로 성공한 갱신에서 바뀐 기록들의 키("해시|타입|레벨"). */
+  async changedInLastRun(mix: string): Promise<Set<string>> {
+    const rows = await this.rows<{ piugame_hash: string; chart_type: string; level: number }>(
+      `SELECT piugame_hash, chart_type, level FROM record_history
+       WHERE user_id = ? AND mix = ? AND kind = 'change' AND sync_run_id = (
+         SELECT id FROM sync_runs WHERE kind = 'records' AND status = 'ok' ORDER BY finished_at DESC LIMIT 1)`,
+      [USER_ID, mix]);
+    return new Set(rows.map((r) => `${r.piugame_hash}|${r.chart_type}|${r.level}`));
+  }
+
   async lastSyncAt(): Promise<string | null> {
     const r = await this.conn.query(
       "SELECT finished_at FROM sync_runs WHERE kind = 'records' AND status = 'ok' ORDER BY finished_at DESC LIMIT 1");

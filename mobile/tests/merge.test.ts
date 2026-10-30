@@ -63,6 +63,6 @@ describe("bestPlayToPatch", () => {
 
 describe("gradeBand", () => {
   it("등급대", () => {
-    expect(["SSS+", "SS", "S+", "AAA", "A", null].map(gradeBand)).toEqual(["SSS", "SS", "S", "AAA-", "AAA-", null]);
+    expect(["SSS+", "SS", "S+", "AAA", "A", null].map(gradeBand)).toEqual(["SSS", "SS", "S", "A-", "A-", null]);
   });
 });

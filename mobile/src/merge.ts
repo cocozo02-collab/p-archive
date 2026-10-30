@@ -74,12 +74,15 @@ export function solveMaxCombo(score: number, j: { perfect: number; great: number
   return null;
 }
 
-export type GradeBand = "SSS" | "SS" | "S" | "AAA-";
+/** 요약 카드의 등급대. "A-"는 AAA+ 이하 전부(A 이하). */
+export type GradeBand = "SSS" | "SS" | "S" | "A-";
 
 export function gradeBand(grade: string | null): GradeBand | null {
   if (!grade) return null;
   if (grade.startsWith("SSS")) return "SSS";
   if (grade.startsWith("SS")) return "SS";
   if (grade.startsWith("S")) return "S";
-  return "AAA-";
+  return "A-";
 }
+
+export const PLATES = ["PG", "UG", "EG", "SG", "MG", "TG", "FG", "RG"] as const;

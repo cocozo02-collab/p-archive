@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap"
     />
     <link rel="stylesheet" href="./src/style.css" />
   </head>
@@ -26,24 +26,67 @@
       <button type="button" class="refresh" id="refresh">기록 갱신</button>
     </header>
 
-    <div class="seg" role="tablist">
-      <button type="button" class="seg-btn single" data-type="Single">SINGLE</button>
-      <button type="button" class="seg-btn double" data-type="Double">DOUBLE</button>
-    </div>
+    <!-- 1. 기록표 -->
+    <section class="tab" id="tab-board">
+      <div class="seg" role="tablist">
+        <button type="button" class="seg-btn single" data-type="Single">SINGLE</button>
+        <button type="button" class="seg-btn double" data-type="Double">DOUBLE</button>
+      </div>
 
-    <div class="chips" id="chips"></div>
+      <nav class="chips" id="chips" aria-label="레벨 선택"></nav>
 
-    <section class="summary">
-      <div class="sum-head"><span id="sum-label"></span><span class="sum-count"><b id="sum-clear">0</b> / <span id="sum-total">0</span></span></div>
-      <div class="bands" id="bands"></div>
+      <div class="tools">
+        <div class="pair" role="group" aria-label="보기 방식">
+          <button type="button" class="tool icon" data-view="grid" aria-label="격자 보기">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2" y="2" width="5" height="5" rx="1" /><rect x="9" y="2" width="5" height="5" rx="1" /><rect x="2" y="9" width="5" height="5" rx="1" /><rect x="9" y="9" width="5" height="5" rx="1" /></svg>
+          </button>
+          <button type="button" class="tool icon" data-view="list" aria-label="목록 보기">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12" /></svg>
+          </button>
+        </div>
+        <label class="tool select" id="sort-wrap">
+          <select id="sort" aria-label="정렬">
+            <option value="score">점수순</option>
+            <option value="name">이름순</option>
+            <option value="grade">등급순</option>
+          </select>
+          <span aria-hidden="true">▾</span>
+        </label>
+        <button type="button" class="tool" id="names" aria-pressed="true">곡명 ON</button>
+        <div class="pair end" role="group" aria-label="곡명 언어">
+          <button type="button" class="tool lang" data-lang="ko">한</button>
+          <button type="button" class="tool lang" data-lang="en">영</button>
+        </div>
+      </div>
+
+      <section class="summary" aria-label="요약">
+        <div class="sum-head"><span id="sum-label"></span><span class="sum-count"><b id="sum-clear">0</b><span> / <span id="sum-total">0</span></span></span></div>
+        <div class="bands" id="bands"></div>
+        <div class="plates" id="plates"></div>
+      </section>
+
+      <div id="board"></div>
     </section>
 
-    <ul class="grid" id="grid"></ul>
+    <!-- 2. 최근 플레이 (B4) -->
+    <section class="tab" id="tab-recent" hidden>
+      <p class="empty-note">최근 플레이 화면은 준비 중이에요.</p>
+    </section>
+
+    <!-- 3. 통계 (B4) -->
+    <section class="tab" id="tab-stats" hidden>
+      <p class="empty-note">통계 화면은 준비 중이에요.</p>
+    </section>
 
     <footer class="foot">
-      <p>"기록 갱신"을 누르면 piugame.com에서 내 기록을 가져와요</p>
       <button type="button" class="link" id="logout">로그아웃 · 저장된 로그인 정보 지우기</button>
     </footer>
+
+    <nav class="tabbar" aria-label="메인 메뉴">
+      <button type="button" data-tab="board">기록표</button>
+      <button type="button" data-tab="recent">최근 플레이</button>
+      <button type="button" data-tab="stats">통계</button>
+    </nav>
 
     <dialog id="login">
       <form method="dialog" id="login-form">
