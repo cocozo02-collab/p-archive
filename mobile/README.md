@@ -31,9 +31,10 @@ export JAVA_HOME="$LOCALAPPDATA/p-archive-tools/jdk21/jdk-21.0.13.0.2+1"
 
 ## 자켓 이미지
 
-저장소와 릴리스에는 자켓 이미지를 넣지 않는다(저작권). 카탈로그에는 piugame.com 자켓 주소와 내용 해시만 있고,
-앱은 **화면에 보이는 자켓만** piugame.com에서 받아(요청 간격 1.5초) 192px WebP로 줄여 폰에 캐시한다(`src/jackets.ts`).
-주소를 모르는 곡은 곡별 색 타일과 첫 글자로 보여주다가, 플레이해서 기록이 생기면 그 주소로 받는다.
+저장소(소스 코드)에는 자켓 이미지를 넣지 않는다. APK에는 `export_catalog.py --with-thumbnails`로 만든 192px WebP 썸네일
+675장(약 5 MB)을 넣는다(`npm run catalog`가 `../export/catalog`를 `public/catalog`로 복사, 둘 다 git 제외).
+APK에 없는 곡(이후 곡 목록 업데이트로 추가된 곡 등)은 **화면에 보이는 자켓만** piugame.com에서 받아(요청 간격 1.5초)
+192px로 줄여 폰에 캐시한다(`src/jackets.ts`). 주소를 모르는 곡은 곡별 색 타일과 첫 글자로 보여준다.
 
 ## 릴리스
 

@@ -18,6 +18,7 @@ export interface SongView {
   hashes: string[];
   nameKo: string | null;
   nameEn: string | null;
+  bundled: string | null; // APK에 내장한 자켓
   jk: string | null; // 자켓 캐시 키
   jsrc: string | null; // 자켓 원본 주소(piugame.com)
 }
@@ -86,7 +87,7 @@ export class SongIndex {
     return {
       key: songKey, songKey, hashes: [...hashes],
       nameKo: song.name_ko ?? this.koFromPlays.get(songKey) ?? null, nameEn: song.name_en,
-      jk: songKey, jsrc: song.jacket_url ?? this.jacketFromPlays.get(songKey) ?? null,
+      bundled: this.catalog.jacketPath(song), jk: songKey, jsrc: song.jacket_url ?? this.jacketFromPlays.get(songKey) ?? null,
     };
   }
 
@@ -95,7 +96,7 @@ export class SongIndex {
     if (key) return this.bySong(key);
     const s = this.local.get(hash);
     return { key: `hash:${hash}`, songKey: null, hashes: [hash], nameKo: s?.name_ko ?? null, nameEn: null,
-             jk: hash, jsrc: s?.jacket_url ?? null };
+             bundled: null, jk: hash, jsrc: s?.jacket_url ?? null };
   }
 
   /** 레벨 하나의 타일. records는 그 타입의 기록(레벨 무관)이어도 된다. */

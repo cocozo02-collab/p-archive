@@ -28,12 +28,12 @@ function placeholderColor(key: string): string {
 }
 
 /**
- * 자켓 자리. 캐시된 자켓이 있으면 바로 보여주고, 없으면 색 타일 + 첫 글자를 두고
+ * 자켓 자리. APK 내장 자켓이나 캐시된 자켓이 있으면 바로 보여주고, 없으면 색 타일 + 첫 글자를 두고
  * data-jk/data-src로 지연 로딩 대상으로 표시한다(jackets.ts가 화면에 보일 때 받아 넣는다).
  */
 export function jacketBox(t: SongView, lang: Lang, cls = "jacket", extra = ""): string {
   const initial = esc([...tileName(t, lang)][0] ?? "?");
-  const src = jacketSrc(t.jk);
+  const src = t.bundled ?? jacketSrc(t.jk);
   const img = src ? `<img src="${esc(src)}" alt="" />` : "";
   const lazy = !src && t.jk && t.jsrc ? ` data-jk="${esc(t.jk)}" data-src="${esc(t.jsrc)}"` : "";
   return `<span class="${cls}"${lazy}><span class="ph" style="background:${placeholderColor(t.key)}" aria-hidden="true">${initial}</span>${img}${extra}</span>`;

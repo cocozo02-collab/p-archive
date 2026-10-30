@@ -4,7 +4,7 @@ import type { RecordRow } from "../src/db";
 
 function tile(key: string, nameKo: string | null, nameEn: string, rec?: Partial<RecordRow>): Tile {
   return {
-    key, songKey: key, hashes: [key], nameKo, nameEn, jk: key, jsrc: null, jacket: null, improved: false, inCatalog: true,
+    key, songKey: key, hashes: [key], nameKo, nameEn, bundled: null, jk: key, jsrc: null, jacket: null, improved: false, inCatalog: true,
     record: rec ? { piugame_hash: key, chart_type: "Single", level: 21, score: null, grade: null, plate: null,
                     status: "pass", played_at: null, ...rec } : null,
   };

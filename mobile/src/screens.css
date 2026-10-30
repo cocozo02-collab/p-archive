@@ -6,9 +6,19 @@
   padding: calc(8px + env(safe-area-inset-top)) var(--gutter) 8px; background: #142530; color: #b5e6ff; font-size: 13px;
 }
 .banner button { height: 36px; padding: 0 14px; border: 0; border-radius: 8px; background: var(--accent); color: var(--bg); font-weight: 700; }
-.foot p { margin: 0 0 6px; font-size: 12px; color: var(--sub2); }
-.foot-btns { display: flex; justify-content: center; flex-wrap: wrap; gap: 0 14px; }
-.foot .legal { margin-top: 10px; font-size: 11px; line-height: 1.5; color: #6b707a; }
+/* 설정 탭 */
+.set-card { display: flex; flex-direction: column; gap: 10px; }
+.set-card h2 { margin: 0; }
+.set-card .refresh { width: 100%; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: 0; font-size: 14px; }
+.kv dt { color: var(--sub2); }
+.kv dd { margin: 0; text-align: right; font-family: var(--font-num); font-size: 16px; }
+.set-btn {
+  display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 12px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 14px; text-decoration: none;
+}
+.set-btn:active { background: var(--line); }
+.legal { margin: 0; font-size: 11px; line-height: 1.6; color: #6b707a; }
 
 /* 전체 화면(곡 상세 / 갱신 결과) */
 body.screen-open { overflow: hidden; }
@@ -134,3 +144,5 @@ body.screen-open { overflow: hidden; }
 .cl { font-family: var(--font-num); font-size: 15px; color: var(--soft); min-width: 54px; text-align: right; }
 .lv-bot { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 6px; font-family: var(--font-num); font-weight: 600; font-size: 13px; }
 .lv-bot .pls { margin-left: auto; color: var(--sub2); font-weight: 500; }
+
+.refresh:disabled { opacity: 0.6; }

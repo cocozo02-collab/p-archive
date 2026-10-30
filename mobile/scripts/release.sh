@@ -22,6 +22,8 @@ case "${1:-}" in
       exit 1
     fi
     [ -f "${P_ARCHIVE_SIGNING:-$HOME/.p-archive/signing.properties}" ] || { echo "서명 정보가 없음 (~/.p-archive/signing.properties)" >&2; exit 1; }
+    THUMBS="$(ls "$ROOT/export/catalog/jackets" 2>/dev/null | wc -l)"
+    [ "$THUMBS" -gt 0 ] || { echo "APK에 넣을 썸네일이 없음: scripts/export_catalog.py --with-thumbnails 먼저" >&2; exit 1; }
     (cd "$MOBILE" && npm run sync)
     (cd "$MOBILE/android" && ./gradlew assembleRelease --no-daemon -q)
     cp "$MOBILE/android/app/build/outputs/apk/release/app-release.apk" "$OUT/p-archive.apk"

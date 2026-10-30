@@ -4,7 +4,8 @@
 
 > **안내**: P-ARCHIVE는 안다미로(ANDAMIRO)가 만든 공식 앱이 아니며, 안다미로의 승인을 받거나 제휴한 앱이 아닙니다.
 > PUMP IT UP 상표, 곡 정보와 자켓 이미지 등에 대한 권리는 안다미로에 있습니다.
-> 이 저장소와 릴리스에는 자켓 이미지가 들어 있지 않습니다. 앱이 piugame.com에서 필요할 때 받아 폰에만 저장합니다.
+> 이 저장소(소스 코드)에는 자켓 이미지가 들어 있지 않습니다. 릴리스 APK에는 기록표 표시용 작은 썸네일(192px)이 들어 있고,
+> 이후 추가되는 곡의 자켓은 앱이 piugame.com에서 필요할 때 받아 폰에만 저장합니다.
 
 ## 다운로드
 
@@ -20,6 +21,7 @@
 - **최근 플레이**: 날짜별 플레이와 판정 수, 최고 기록을 세운 플레이(BEST).
 - **갱신 결과**: 오른 기록, 새 클리어, PUMBILITY 변화.
 - **통계**: PUMBILITY 추이, 레벨별 클리어·등급·플레이트.
+- **설정**: 업데이트 확인, 앱·곡 목록 버전, 로그아웃.
 
 ## 개인정보와 동작 방식
 
@@ -47,7 +49,7 @@
 python -m venv .venv
 .venv\Scripts\python -m pip install -r requirements.txt
 .venv\Scripts\python scripts\sync_catalog.py      # 곡 목록 동기화 (--full: 한국어 곡명 페이지 전체 다시 받기)
-.venv\Scripts\python scripts\export_catalog.py    # export/catalog/catalog.json (자켓 이미지 없음)
+.venv\Scripts\python scripts\export_catalog.py --with-thumbnails   # export/catalog/ (catalog.json + APK에 넣을 썸네일, git 제외)
 .venv\Scripts\python -m unittest discover -s tests -t .
 ```
 

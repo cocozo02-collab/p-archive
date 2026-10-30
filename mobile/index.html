@@ -82,15 +82,34 @@
     <!-- 3. 통계 -->
     <section class="tab" id="tab-stats" hidden></section>
 
-    <footer class="foot">
-      <p id="app-info"></p>
-      <div class="foot-btns">
-        <button type="button" class="link" id="check-update">업데이트 확인</button>
-        <button type="button" class="link" id="logout">로그아웃 · 저장된 로그인 정보 지우기</button>
-      </div>
-      <p class="legal">P-ARCHIVE는 안다미로의 공식 앱이 아니며 안다미로와 관련이 없습니다.
-        PUMP IT UP 상표와 곡·자켓 이미지의 권리는 안다미로(ANDAMIRO)에 있습니다.</p>
-    </footer>
+    <!-- 4. 설정 -->
+    <section class="tab" id="tab-settings" hidden>
+      <header class="tab-head"><h1>설정</h1></header>
+
+      <section class="card set-card" aria-label="업데이트">
+        <h2>업데이트</h2>
+        <dl class="kv">
+          <dt>앱 버전</dt><dd id="set-app-version">-</dd>
+          <dt>곡 목록</dt><dd id="set-catalog">-</dd>
+        </dl>
+        <p class="muted" id="update-status">새 버전과 새 곡 목록이 있는지 GitHub 릴리스에서 확인해요.</p>
+        <button type="button" class="refresh" id="check-update">업데이트 확인</button>
+      </section>
+
+      <section class="card set-card" aria-label="계정">
+        <h2>piugame 계정</h2>
+        <p class="muted" id="login-status">-</p>
+        <button type="button" class="set-btn" id="logout">로그아웃 · 저장된 로그인 정보 지우기</button>
+      </section>
+
+      <section class="card set-card" aria-label="정보">
+        <h2>정보</h2>
+        <p class="muted">piugame.com에는 "기록 갱신"을 누를 때만 요청하고, 요청 사이에 1.5초 간격을 둬요. 기록은 이 폰에만 저장돼요.</p>
+        <a class="set-btn link-btn" href="https://github.com/cocozo02-collab/p-archive" target="_blank" rel="noopener">GitHub 저장소 · 소스 코드</a>
+        <p class="legal">P-ARCHIVE는 안다미로의 공식 앱이 아니며 안다미로의 승인을 받거나 제휴하지 않았습니다.
+          PUMP IT UP 상표와 곡 정보·자켓 이미지의 권리는 안다미로(ANDAMIRO)에 있습니다.</p>
+      </section>
+    </section>
 
     <!-- 곡 상세 / 갱신 결과: 전체 화면으로 덮는다 -->
     <section class="screen" id="detail" hidden aria-label="곡 상세"></section>
@@ -100,6 +119,7 @@
       <button type="button" data-tab="board">기록표</button>
       <button type="button" data-tab="recent">최근 플레이</button>
       <button type="button" data-tab="stats">통계</button>
+      <button type="button" data-tab="settings">설정</button>
     </nav>
 
     <dialog id="login">

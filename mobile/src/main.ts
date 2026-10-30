@@ -15,7 +15,7 @@ import { groupByDay, levelStat } from "./views";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
-type Tab = "board" | "recent" | "stats";
+type Tab = "board" | "recent" | "stats" | "settings";
 
 interface ViewState {
   tab: Tab;
@@ -141,7 +141,7 @@ async function renderStats(): Promise<void> {
 
 function showTab(tab: Tab): void {
   state.tab = tab;
-  for (const id of ["board", "recent", "stats"] as const) $(`tab-${id}`).hidden = id !== tab;
+  for (const id of ["board", "recent", "stats", "settings"] as const) $(`tab-${id}`).hidden = id !== tab;
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-tab]")) {
     if (b.dataset.tab === tab) b.setAttribute("aria-current", "page");
     else b.removeAttribute("aria-current");
@@ -149,6 +149,7 @@ function showTab(tab: Tab): void {
   window.scrollTo({ top: 0 });
   if (tab === "recent") void renderRecent();
   if (tab === "stats") void renderStats();
+  if (tab === "settings") void renderSettings();
   if (tab === "board") observeJackets($("board"));
 }
 
@@ -202,7 +203,16 @@ async function renderHeader(): Promise<void> {
     ? `마지막 갱신 · ${new Date(last).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false })}`
     : "아직 갱신하지 않았어요";
   $("mix").textContent = catalog.mix === "Phoenix2" ? "Phoenix 2" : catalog.mix;
-  $("app-info").textContent = `앱 v${await appVersion()} · 곡 목록 ${catalog.generatedAt.slice(0, 10)}`;
+}
+
+async function renderSettings(): Promise<void> {
+  $("set-app-version").textContent = `v${await appVersion()}`;
+  $("set-catalog").textContent = new Date(catalog.generatedAt).toLocaleString("ko-KR", {
+    year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false,
+  });
+  $("login-status").textContent = (await loadCredentials())
+    ? "로그인 정보가 이 폰의 보안 저장소에 저장돼 있어요. 세션이 끝나면 자동으로 다시 로그인해요."
+    : "로그인 정보는 저장하지 않아요. 세션이 끝나면 기록 갱신 때 다시 로그인해요.";
 }
 
 function toast(msg: string): void {
@@ -295,11 +305,18 @@ async function logout(): Promise<void> {
   await new PiuClient().logout();
   await clearCredentials();
   toast("로그아웃했어요. 다음 갱신 때 다시 로그인해요.");
+  if (state.tab === "settings") void renderSettings();
 }
 
 /* ---------- 업데이트 ---------- */
 
 async function runUpdateCheck(manual: boolean): Promise<void> {
+  const status = $("update-status");
+  const button = $<HTMLButtonElement>("check-update");
+  if (manual) {
+    status.textContent = "확인 중…";
+    button.disabled = true;
+  }
   try {
     const { app, catalog: cat } = await checkUpdates(catalog.generatedAt);
     if (cat) {
@@ -313,9 +330,16 @@ async function runUpdateCheck(manual: boolean): Promise<void> {
     pendingAppUpdate = app;
     $("update-banner").hidden = !app;
     if (app) $("update-text").textContent = `새 버전 ${app.version}이 있어요`;
+    status.textContent = app ? `새 버전 ${app.version}이 있어요. 위의 "업데이트"를 누르면 설치 화면이 열려요.`
+      : cat ? "새 곡 목록을 받아 적용했어요. 앱은 최신 버전이에요." : "앱과 곡 목록 모두 최신이에요.";
     if (manual && !app && !cat) toast("최신 버전이에요");
+    if (state.tab === "settings") void renderSettings();
   } catch (e) {
-    if (manual) toast(e instanceof Error ? e.message : String(e));
+    const msg = e instanceof Error ? e.message : String(e);
+    status.textContent = msg;
+    if (manual) toast(msg);
+  } finally {
+    button.disabled = false;
   }
 }
 

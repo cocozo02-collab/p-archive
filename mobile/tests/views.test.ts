@@ -69,7 +69,7 @@ describe("changeItem", () => {
 
 describe("levelStat", () => {
   it("클리어·등급대·주요 플레이트", () => {
-    const t = (grade: string, plate: string) => ({ key: grade + plate, songKey: null, hashes: [], nameKo: null, nameEn: null, jk: null, jsrc: null,
+    const t = (grade: string, plate: string) => ({ key: grade + plate, songKey: null, hashes: [], nameKo: null, nameEn: null, bundled: null, jk: null, jsrc: null,
       jacket: null, improved: false, inCatalog: true,
       record: { piugame_hash: "h", chart_type: "Single", level: 21, score: 1, grade, plate, status: "pass" as const, played_at: null } });
     const empty = { ...t("SSS", "PG"), record: null };

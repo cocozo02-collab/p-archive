@@ -192,6 +192,7 @@ button { cursor: pointer; }
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
   border-top: 1px solid var(--line); background: #12141a; padding-bottom: env(safe-area-inset-bottom);
 }
+.tabbar { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .tabbar button { height: var(--tabbar); border: 0; background: none; color: var(--sub2); font-size: 13px; }
 .tabbar button[aria-current="page"] { color: var(--text); font-weight: 700; }
 
