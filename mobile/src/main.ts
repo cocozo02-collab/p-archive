@@ -1,10 +1,10 @@
 import { App } from "@capacitor/app";
-import { groupByGrade, type Lang, SongIndex, type SongView, type SortMode, sortTiles, summarize, type Tile } from "./board";
+import { groupByGrade, groupByPlate, type Lang, SongIndex, type SongView, type SortMode, sortTiles, summarize, type Tile } from "./board";
 import { Catalog } from "./catalog";
 import { clearCredentials, type Credentials, loadCredentials, saveCredentials } from "./credentials";
 import { Db, type RecordRow } from "./db";
 import { initJackets, observeJackets } from "./jackets";
-import { isBetter, PLATES } from "./merge";
+import { GRADES, isBetter, PLATES } from "./merge";
 import { LoginError, PiuClient } from "./piu/client";
 import type { ChartType } from "./piu/parser";
 import { NeedLogin, type SyncSummary, syncRecords } from "./sync";
@@ -47,7 +47,7 @@ const prefs = {
       if (v.statsType === "Single" || v.statsType === "Double") state.statsType = v.statsType;
       if (typeof v.level === "number") state.level = v.level;
       if (v.view === "grid" || v.view === "list") state.view = v.view;
-      if (["score", "name", "grade"].includes(v.sort)) state.sort = v.sort;
+      if (["score", "name", "grade", "plate"].includes(v.sort)) state.sort = v.sort;
       if (typeof v.showNames === "boolean") state.showNames = v.showNames;
       if (v.lang === "ko" || v.lang === "en") state.lang = v.lang;
     } catch { /* 무시 */ }
@@ -64,9 +64,9 @@ const chartLabel = () => `${state.type === "Single" ? "S" : "D"}${state.level}`;
 function renderTools(): void {
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-view]")) b.setAttribute("aria-pressed", String(b.dataset.view === state.view));
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-lang]")) b.setAttribute("aria-pressed", String(b.dataset.lang === state.lang));
-  $("sort-label").textContent = { score: "점수순", name: "이름순", grade: "등급순" }[state.sort];
+  $("sort-label").textContent = { score: "점수순", name: "이름순", grade: "등급순", plate: "플레이트순" }[state.sort];
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-sort]")) b.setAttribute("aria-checked", String(b.dataset.sort === state.sort));
-  $("sort-wrap").classList.toggle("active", state.sort === "grade");
+  $("sort-wrap").classList.toggle("active", state.sort === "grade" || state.sort === "plate");
   const names = $("names");
   names.textContent = state.showNames ? "곡명 ON" : "곡명 OFF";
   names.setAttribute("aria-pressed", String(state.showNames));
@@ -78,9 +78,17 @@ function renderSummary(): void {
   $("sum-label").textContent = `${chartLabel()} 클리어`;
   $("sum-clear").textContent = String(s.clear);
   $("sum-total").textContent = String(s.total);
-  const bandLabel = { SSS: "SSS", SS: "SS", S: "S", "A-": "A 이하" } as const;
-  $("bands").innerHTML = (["SSS", "SS", "S", "A-"] as const)
-    .map((k) => `<div class="cell"><span class="k ${gradeClass(k === "A-" ? "AAA" : k)}">${bandLabel[k]}</span><b>${s.bands[k]}</b></div>`)
+  $("sum-average").textContent = s.average == null ? "-" : Math.round(s.average).toLocaleString("en-US");
+  // 레벨 게이지: 막대 길이 = 개수 / 그 레벨 전체 채보 수
+  $("gauges").innerHTML = s.gauges
+    .map((g) => {
+      const pct = s.total ? (g.count / s.total) * 100 : 0;
+      return `<div class="gauge"><span class="gl">${g.label}</span><span class="gb"><span class="gf" style="width:${pct.toFixed(1)}%;background:${g.color}"></span><span class="gt">${g.count} / ${s.total}</span></span></div>`;
+    })
+    .join("");
+  // 등급은 묶지 않고 SSS+ … F를 모두 보여준다(0개는 흐리게).
+  $("bands").innerHTML = GRADES
+    .map((g) => `<div class="cell${s.grades[g] ? "" : " zero"}"><span class="k ${gradeClass(g)}">${g}</span><b>${s.grades[g]}</b></div>`)
     .join("");
   $("plates").innerHTML = PLATES
     .map((p) => `<div class="cell${s.plates[p] ? "" : " zero"}"><span class="k ${plateClass(p)}">${p}</span><b>${s.plates[p]}</b></div>`)
@@ -90,10 +98,13 @@ function renderSummary(): void {
 function renderBoard(): void {
   const board = $("board");
   const opts = { lang: state.lang, showName: state.showNames };
-  if (state.sort === "grade" && state.view === "grid") {
-    board.innerHTML = `<div class="groups">${groupByGrade(tiles, state.lang).map((g) => groupHtml(g, opts)).join("")}</div>`;
+  const grouped = state.sort === "grade" ? groupByGrade(tiles, state.lang) : state.sort === "plate" ? groupByPlate(tiles, state.lang) : null;
+  if (grouped && state.view === "grid") {
+    // 등급순은 구역이 등급을 말해 주므로 타일 띠에 점수를, 플레이트순은 띠에 등급을 보여준다.
+    const scoreBand = state.sort === "grade";
+    board.innerHTML = `<div class="groups">${grouped.map((g) => groupHtml(g, { ...opts, scoreBand })).join("")}</div>`;
   } else {
-    const sorted = state.sort === "grade" ? groupByGrade(tiles, state.lang).flatMap((g) => g.tiles) : sortTiles(tiles, state.sort, state.lang);
+    const sorted = grouped ? grouped.flatMap((g) => g.tiles) : sortTiles(tiles, state.sort, state.lang);
     board.innerHTML = state.view === "list"
       ? `<ul class="rows">${sorted.map((t) => rowHtml(t, { lang: state.lang, chart: chartLabel() })).join("")}</ul>`
       : `<ul class="grid">${sorted.map((t) => tileHtml(t, { ...opts, scoreBand: false })).join("")}</ul>`;

@@ -74,7 +74,9 @@ describe("levelStat", () => {
       record: { piugame_hash: "h", chart_type: "Single", level: 21, score: 1, grade, plate, status: "pass" as const, played_at: null } });
     const empty = { ...t("SSS", "PG"), record: null };
     const s = levelStat(21, [t("SSS+", "UG"), t("SS", "MG"), t("S", "MG"), t("AAA", "TG"), empty]);
-    expect(s).toEqual({ level: 21, clear: 4, total: 5, bands: { SSS: 1, SS: 1, S: 1, "A-": 1 }, plates: "UG 1 · MG 2 · TG 1" });
+    expect(s).toEqual({ level: 21, clear: 4, total: 5,
+      grades: [{ grade: "SSS+", count: 1 }, { grade: "SS", count: 1 }, { grade: "S", count: 1 }, { grade: "AAA", count: 1 }],
+      plates: "UG 1 · MG 2 · TG 1" });
   });
 });
 

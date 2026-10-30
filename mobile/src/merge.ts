@@ -74,15 +74,24 @@ export function solveMaxCombo(score: number, j: { perfect: number; great: number
   return null;
 }
 
-/** 요약 카드의 등급대. "A-"는 AAA+ 이하 전부(A 이하). */
-export type GradeBand = "SSS" | "SS" | "S" | "A-";
+/** 등급, 높은 것부터 (SSS+ … F). */
+export const GRADES = [...GRADE_ORDER].reverse();
 
-export function gradeBand(grade: string | null): GradeBand | null {
-  if (!grade) return null;
-  if (grade.startsWith("SSS")) return "SSS";
-  if (grade.startsWith("SS")) return "SS";
-  if (grade.startsWith("S")) return "S";
-  return "A-";
+/** 플레이트, 높은 것부터 (PG … RG). */
+export const PLATES = ["PG", "UG", "EG", "SG", "MG", "TG", "FG", "RG"] as const;
+
+export const gradeRank = (g: string | null) => rank(GRADE_ORDER, g);
+export const plateRank = (p: string | null) => rank(PLATE_ORDER, p);
+
+/** UI-SPEC 색: SSS+·SSS / SS+·SS / S+·S / AAA+·AAA / 그 이하. */
+export function gradeColor(grade: string): string {
+  if (grade.startsWith("SSS")) return "#F5C542";
+  if (grade.startsWith("SS")) return "#E6D29A";
+  if (grade.startsWith("S")) return "#9FD5FF";
+  if (grade.startsWith("AAA")) return "#8BE3A8";
+  return "#C9CDD4";
 }
 
-export const PLATES = ["PG", "UG", "EG", "SG", "MG", "TG", "FG", "RG"] as const;
+export function plateColor(plate: string): string {
+  return ({ PG: "#F5C542", UG: "#F5C542", EG: "#9FD5FF", SG: "#9FD5FF", MG: "#8BE3A8", TG: "#8BE3A8" } as Record<string, string>)[plate] ?? "#C9CDD4";
+}

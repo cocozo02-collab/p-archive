@@ -5,11 +5,11 @@
 import type { Catalog } from "./catalog";
 import type { Db, LocalSong, RecordRow } from "./db";
 import { jacketSrc } from "./jackets";
-import { type GradeBand, gradeBand, isBetter, PLATES } from "./merge";
+import { GRADES, gradeColor, gradeRank, isBetter, PLATES, plateColor, plateRank } from "./merge";
 import type { ChartType } from "./piu/parser";
 
 export type Lang = "ko" | "en";
-export type SortMode = "score" | "name" | "grade";
+export type SortMode = "score" | "name" | "grade" | "plate";
 
 /** 화면에 곡을 그릴 때 필요한 정보. 카탈로그 곡이면 key=곡 키, 아니면 "hash:<piugame 해시>". */
 export interface SongView {
@@ -33,8 +33,16 @@ export interface Tile extends SongView {
 export interface Summary {
   clear: number;
   total: number;
-  bands: Record<GradeBand, number>;
+  grades: Record<string, number>; // SSS+ … F 전부(0개 포함)
   plates: Record<(typeof PLATES)[number], number>;
+  average: number | null; // 클리어한 채보의 평균 점수
+  gauges: Gauge[];
+}
+
+export interface Gauge {
+  label: string;
+  count: number;
+  color: string;
 }
 
 export interface Group {
@@ -126,18 +134,33 @@ export class SongIndex {
 }
 
 export function summarize(tiles: Tile[]): Summary {
-  const bands: Record<GradeBand, number> = { SSS: 0, SS: 0, S: 0, "A-": 0 };
+  const grades: Record<string, number> = Object.fromEntries(GRADES.map((g) => [g, 0]));
   const plates = Object.fromEntries(PLATES.map((p) => [p, 0])) as Summary["plates"];
+  const passes = tiles.filter((t) => t.record?.status === "pass").map((t) => t.record!);
+  const atLeastGrade = (g: string) => passes.filter((r) => gradeRank(r.grade) >= gradeRank(g)).length;
+  const atLeastPlate = (p: string) => passes.filter((r) => plateRank(r.plate) >= plateRank(p)).length;
+  // 레벨 게이지: 어려운 조건부터. SG 이상 = 미스 없음(풀콤보에 해당).
+  const gauges: Gauge[] = [
+    { label: "PG", count: atLeastPlate("PG"), color: "#FF7A59" },
+    { label: "UG 이상", count: atLeastPlate("UG"), color: "#F2A53C" },
+    { label: "SG 이상", count: atLeastPlate("SG"), color: "#F5C542" },
+    { label: "SSS+", count: atLeastGrade("SSS+"), color: "#E6D29A" },
+    { label: "SSS 이상", count: atLeastGrade("SSS"), color: "#C9E68A" },
+    { label: "SS 이상", count: atLeastGrade("SS"), color: "#8BE3A8" },
+    { label: "S 이상", count: atLeastGrade("S"), color: "#6FD3C5" },
+    { label: "클리어", count: passes.length, color: "#7FD3FF" },
+  ];
+  const scores = passes.map((r) => r.score).filter((s): s is number => s != null);
+  const average = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
   let clear = 0;
   for (const t of tiles) {
     if (t.record?.status !== "pass") continue;
     clear++;
-    const band = gradeBand(t.record.grade);
-    if (band) bands[band]++;
+    if (t.record.grade && t.record.grade in grades) grades[t.record.grade]++;
     const plate = t.record.plate as keyof Summary["plates"] | null;
     if (plate && plate in plates) plates[plate]++;
   }
-  return { clear, total: tiles.length, bands, plates };
+  return { clear, total: tiles.length, grades, plates, average, gauges };
 }
 
 const scoreOf = (t: Tile) => (hasRecord(t) ? t.record!.score ?? -1 : -2);
@@ -150,20 +173,39 @@ export function sortTiles(tiles: Tile[], mode: SortMode, lang: Lang): Tile[] {
   return sorted;
 }
 
-const GROUPS: { label: string; color: string; test: (t: Tile) => boolean }[] = [
-  { label: "SSS+", color: "#F5C542", test: (t) => t.record?.status === "pass" && t.record.grade === "SSS+" },
-  { label: "SSS", color: "#F5C542", test: (t) => t.record?.status === "pass" && t.record.grade === "SSS" },
-  { label: "SS+", color: "#E6D29A", test: (t) => t.record?.status === "pass" && t.record.grade === "SS+" },
-  { label: "SS", color: "#E6D29A", test: (t) => t.record?.status === "pass" && t.record.grade === "SS" },
-  { label: "S+ · S", color: "#9FD5FF", test: (t) => t.record?.status === "pass" && (t.record.grade === "S+" || t.record.grade === "S") },
-  { label: "AAA 이하", color: "#8BE3A8", test: (t) => t.record?.status === "pass" },
+type GroupDef = { label: string; color: string; test: (t: Tile) => boolean };
+
+const isPass = (t: Tile) => t.record?.status === "pass";
+const TAIL: GroupDef[] = [
   { label: "실패", color: "#FF8A8A", test: (t) => t.record?.status === "broken" },
   { label: "기록 없음", color: "#8A909C", test: () => true },
 ];
 
-/** 등급순 보기: V-ARCHIVE처럼 등급 구역으로 묶는다. 빈 구역은 뺀다. */
+// 등급은 묶지 않고 하나씩 모두 나눈다. 등급을 읽지 못한 클리어는 "등급 없음".
+const GRADE_GROUPS: GroupDef[] = [
+  ...GRADES.map((g) => ({ label: g, color: gradeColor(g), test: (t: Tile) => isPass(t) && t.record!.grade === g })),
+  { label: "등급 없음", color: "#C9CDD4", test: isPass },
+  ...TAIL,
+];
+
+const PLATE_GROUPS: GroupDef[] = [
+  ...PLATES.map((p) => ({ label: p, color: plateColor(p), test: (t: Tile) => isPass(t) && t.record!.plate === p })),
+  { label: "플레이트 없음", color: "#C9CDD4", test: isPass },
+  ...TAIL,
+];
+
+/** 등급순 보기: V-ARCHIVE처럼 등급마다 구역으로 묶는다. 빈 구역은 뺀다. */
 export function groupByGrade(tiles: Tile[], lang: Lang): Group[] {
-  const buckets = GROUPS.map((g) => ({ ...g, tiles: [] as Tile[] }));
+  return groupTiles(tiles, GRADE_GROUPS, lang);
+}
+
+/** 플레이트순 보기: PG … RG, 실패, 기록 없음 구역. */
+export function groupByPlate(tiles: Tile[], lang: Lang): Group[] {
+  return groupTiles(tiles, PLATE_GROUPS, lang);
+}
+
+function groupTiles(tiles: Tile[], defs: GroupDef[], lang: Lang): Group[] {
+  const buckets = defs.map((g) => ({ ...g, tiles: [] as Tile[] }));
   for (const t of sortTiles(tiles, "score", lang)) buckets.find((g) => g.test(t))!.tiles.push(t);
   return buckets.filter((g) => g.tiles.length).map((g) => {
     const scores = g.tiles.filter(hasRecord).map((t) => t.record!.score ?? 0);

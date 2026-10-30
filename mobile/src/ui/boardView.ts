@@ -79,11 +79,11 @@ export function rowHtml(t: Tile, o: { lang: Lang; chart: string }): string {
     <span class="gs">${grade}<span class="sc">${has ? fmtScore(r!.score) : "기록 없음"}</span></span>${plate}</button></li>`;
 }
 
-export function groupHtml(g: Group, o: { lang: Lang; showName: boolean }): string {
+export function groupHtml(g: Group, o: { lang: Lang; showName: boolean; scoreBand: boolean }): string {
   return `<section class="group">
     <div class="group-head" style="border-left-color:${g.color}">
       <span class="gl" style="color:${g.color}">${esc(g.label)}</span><span class="gc">${g.tiles.length}채보</span><span class="gsub">${esc(g.sub)}</span>
     </div>
-    <ul class="grid">${g.tiles.map((t) => tileHtml(t, { ...o, scoreBand: true })).join("")}</ul>
+    <ul class="grid">${g.tiles.map((t) => tileHtml(t, o)).join("")}</ul>
   </section>`;
 }

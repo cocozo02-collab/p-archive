@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { groupByGrade, sortTiles, summarize, type Tile, tileName } from "../src/board";
+import { groupByGrade, groupByPlate, sortTiles, summarize, type Tile, tileName } from "../src/board";
 import type { RecordRow } from "../src/db";
 
 function tile(key: string, nameKo: string | null, nameEn: string, rec?: Partial<RecordRow>): Tile {
@@ -24,8 +24,13 @@ describe("summarize", () => {
   it("클리어·등급대·플레이트(0개도 칸 유지)", () => {
     const s = summarize(tiles);
     expect([s.clear, s.total]).toEqual([4, 7]);
-    expect(s.bands).toEqual({ SSS: 2, SS: 0, S: 1, "A-": 1 });
+    expect(Object.entries(s.grades).filter(([, n]) => n)).toEqual([["SSS+", 1], ["SSS", 1], ["S+", 1], ["AAA", 1]]);
+    expect(Object.keys(s.grades)).toHaveLength(16);
     expect(s.plates).toEqual({ PG: 0, UG: 1, EG: 0, SG: 1, MG: 1, TG: 0, FG: 1, RG: 0 });
+    expect(s.average).toBe((998120 + 991002 + 976400 + 958300) / 4);
+    expect(s.gauges.map((g) => [g.label, g.count])).toEqual([
+      ["PG", 0], ["UG 이상", 1], ["SG 이상", 2], ["SSS+", 1], ["SSS 이상", 2], ["SS 이상", 2], ["S 이상", 3], ["클리어", 4],
+    ]);
   });
 });
 
@@ -49,10 +54,18 @@ describe("groupByGrade", () => {
   it("구역, 빈 구역 제외, 평균/최고", () => {
     const g = groupByGrade(tiles, "ko");
     expect(g.map((x) => [x.label, x.tiles.map((t) => t.key)])).toEqual([
-      ["SSS+", ["a"]], ["SSS", ["b"]], ["S+ · S", ["c"]], ["AAA 이하", ["d"]], ["실패", ["e"]], ["기록 없음", ["g", "f"]],
+      ["SSS+", ["a"]], ["SSS", ["b"]], ["S+", ["c"]], ["AAA", ["d"]], ["실패", ["e"]], ["기록 없음", ["g", "f"]],
     ]);
     expect(g[0].sub).toBe("평균 998,120");
     expect(g[4].sub).toBe("최고 812,440");
     expect(g[5].sub).toBe("");
+  });
+});
+
+describe("groupByPlate", () => {
+  it("PG … RG, 실패, 기록 없음", () => {
+    expect(groupByPlate(tiles, "ko").map((x) => [x.label, x.tiles.map((t) => t.key)])).toEqual([
+      ["UG", ["a"]], ["SG", ["b"]], ["MG", ["c"]], ["FG", ["d"]], ["실패", ["e"]], ["기록 없음", ["g", "f"]],
+    ]);
   });
 });

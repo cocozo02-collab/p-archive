@@ -97,6 +97,24 @@ button { cursor: pointer; }
 .bands, .plates { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .bands .cell, .plates .cell { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 8px; border-radius: 8px; }
 .bands .cell { background: var(--bg); }
+.bands .cell.zero { opacity: 0.4; }
+
+/* 레벨 게이지 */
+.avg-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; color: var(--soft); }
+.avg-row b { font-family: var(--font-num); font-size: 24px; color: var(--text); }
+.gauges { display: flex; flex-direction: column; gap: 5px; }
+.gauge { display: flex; align-items: center; gap: 8px; }
+.gauge .gl { flex: 0 0 62px; font-family: var(--font-num); font-weight: 700; font-size: 14px; color: var(--soft); }
+.gauge .gb {
+  position: relative; flex: 1; height: 22px; border-radius: 6px; overflow: hidden;
+  background: #2a2e36; border: 1px solid #0b0d10;
+}
+.gauge .gf { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; }
+.gauge .gt {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-num); font-weight: 700; font-size: 14px; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+.muted-inline { color: var(--sub2); font-family: var(--font-body); font-weight: 400; font-size: 12px; }
 .plates .cell { padding: 4px 8px; border: 1px solid var(--line); }
 .plates .cell.zero { opacity: 0.45; }
 .cell .k { font-family: var(--font-num); font-weight: 700; font-size: 15px; }

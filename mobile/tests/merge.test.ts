@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bestPlayToPatch, gradeBand, isBetter, recordChange, solveMaxCombo } from "../src/merge";
+import { bestPlayToPatch, GRADES, isBetter, recordChange, solveMaxCombo } from "../src/merge";
 
 describe("recordChange", () => {
   const rec = (status: "pass" | "broken" | "stage_break", score: number | null, grade: string | null, plate: string | null) =>
@@ -61,8 +61,8 @@ describe("bestPlayToPatch", () => {
   });
 });
 
-describe("gradeBand", () => {
-  it("등급대", () => {
-    expect(["SSS+", "SS", "S+", "AAA", "A", null].map(gradeBand)).toEqual(["SSS", "SS", "S", "A-", "A-", null]);
+describe("GRADES", () => {
+  it("높은 등급부터 16개", () => {
+    expect(GRADES).toEqual(["SSS+", "SSS", "SS+", "SS", "S+", "S", "AAA+", "AAA", "AA+", "AA", "A+", "A", "B", "C", "D", "F"]);
   });
 });

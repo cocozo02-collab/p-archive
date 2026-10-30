@@ -146,8 +146,8 @@ export function statsHtml(o: { history: { value: number; fetched_at: string }[];
     const pct = l.total ? Math.round((l.clear / l.total) * 100) : 0;
     return `<div class="lv-card"><div class="lv-top"><span class="lv">${chartTag(o.type, l.level)}</span>
         <span class="bar"><span style="width:${pct}%"></span></span><span class="cl">${l.clear} / ${l.total}</span></div>
-      <div class="lv-bot"><span class="g-sss">SSS ${l.bands.SSS}</span><span class="g-ss">SS ${l.bands.SS}</span>
-        <span class="g-s">S ${l.bands.S}</span><span class="g-aaa">A↓ ${l.bands["A-"]}</span><span class="pls">${esc(l.plates)}</span></div></div>`;
+      <div class="lv-bot">${l.grades.map((g) => `<span class="${gradeClass(g.grade)}">${g.grade} ${g.count}</span>`).join("") || `<span class="muted-inline">클리어 없음</span>`}
+        <span class="pls">${esc(l.plates)}</span></div></div>`;
   }).join("");
   return `<header class="tab-head"><h1>통계</h1></header>
     <section class="card" aria-label="PUMBILITY"><div class="pumb-top"><span class="k">PUMBILITY</span>

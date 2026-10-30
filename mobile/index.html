@@ -58,6 +58,7 @@
             <button type="button" role="menuitemradio" data-sort="score">점수순</button>
             <button type="button" role="menuitemradio" data-sort="name">이름순</button>
             <button type="button" role="menuitemradio" data-sort="grade">등급순</button>
+            <button type="button" role="menuitemradio" data-sort="plate">플레이트순</button>
           </div>
         </div>
         <button type="button" class="tool" id="names" aria-pressed="true">곡명 ON</button>
@@ -69,6 +70,8 @@
 
       <section class="summary" aria-label="요약">
         <div class="sum-head"><span id="sum-label"></span><span class="sum-count"><b id="sum-clear">0</b><span> / <span id="sum-total">0</span></span></span></div>
+        <div class="avg-row"><span>평균 점수</span><b id="sum-average">-</b></div>
+        <div class="gauges" id="gauges"></div>
         <div class="bands" id="bands"></div>
         <div class="plates" id="plates"></div>
       </section>

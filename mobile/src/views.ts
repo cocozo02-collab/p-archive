@@ -2,7 +2,7 @@
 
 import { hasRecord, type Tile } from "./board";
 import type { HistoryRow, PlayRow, RecordChange } from "./db";
-import { gradeBand, PLATES } from "./merge";
+import { GRADES, PLATES } from "./merge";
 
 export const fmtScore = (n: number | null | undefined) => (n == null ? "-" : n.toLocaleString("en-US"));
 export const fmtDate = (iso: string | null | undefined) => (iso ? iso.slice(5, 10).replace("-", "/") : "");
@@ -96,24 +96,24 @@ export interface LevelStat {
   level: number;
   clear: number;
   total: number;
-  bands: Record<"SSS" | "SS" | "S" | "A-", number>;
+  grades: { grade: string; count: number }[]; // 1개 이상인 등급만, 높은 것부터
   plates: string; // "UG 1 · MG 4 · TG 1"
 }
 
 /** 통계 화면의 레벨별 카드. */
 export function levelStat(level: number, tiles: Tile[]): LevelStat {
-  const bands = { SSS: 0, SS: 0, S: 0, "A-": 0 };
+  const counts = new Map<string, number>();
   const plates = new Map<string, number>();
   let clear = 0;
   for (const t of tiles) {
     if (!hasRecord(t) || t.record!.status !== "pass") continue;
     clear++;
-    const b = gradeBand(t.record!.grade);
-    if (b) bands[b]++;
+    if (t.record!.grade) counts.set(t.record!.grade, (counts.get(t.record!.grade) ?? 0) + 1);
     if (t.record!.plate) plates.set(t.record!.plate, (plates.get(t.record!.plate) ?? 0) + 1);
   }
   // 많은 순으로 3개를 고른 뒤 플레이트 순서(PG→RG)로 보여준다.
   const top = [...plates.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3)
     .sort((a, b) => PLATES.indexOf(a[0] as never) - PLATES.indexOf(b[0] as never));
-  return { level, clear, total: tiles.length, bands, plates: top.length ? top.map(([p, n]) => `${p} ${n}`).join(" · ") : "-" };
+  const grades = GRADES.filter((g) => counts.get(g)).map((g) => ({ grade: g, count: counts.get(g)! }));
+  return { level, clear, total: tiles.length, grades, plates: top.length ? top.map(([p, n]) => `${p} ${n}`).join(" · ") : "-" };
 }
